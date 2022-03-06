@@ -6,14 +6,14 @@ public class PlayerController : MonoBehaviour
 {
     //player params
     float speed;
-    const float jumpForce = 100f;
+    const float jumpForce = 1000f;
     const float groundSpeed = 50f;
     const float airSpeed = 1f;
     const float groundDrag = 6f;
     const float airDrag = 1f;
     const float sprintingCoeff = 2f;
     const float mouseSensitivity = 2f;
-    Vector3 idealCameraOffset = new Vector3(-3, -1, 4.86f);
+    Vector3 cameraOffset = new Vector3(-3, -1, 4.86f);
     const float height = 2;
     const float width = 2;
 
@@ -30,6 +30,10 @@ public class PlayerController : MonoBehaviour
     Vector3 playerRotation;
     float xRotation;
     float yRotation;
+    Vector3 idealCameraPos;
+    Vector3 camSmoothVelocity;
+
+    List<Vector3> rayPos;
 
     // Start is called before the first frame update
     void Start()
@@ -40,7 +44,8 @@ public class PlayerController : MonoBehaviour
 
         //rigidbody settings
         rb.freezeRotation = true;
-        rb.mass = 40f;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.mass = 500;
     }
 
     // Update is called once per frame
@@ -58,34 +63,31 @@ public class PlayerController : MonoBehaviour
 
     void LateUpdate()
     {
-        RotatePlayer();
         PlaceCamera();
     }
 
     void PlaceCamera()
     {
-        camera.position = transform.position - idealCameraOffset; 
+        Vector3 lastCameraPos = camera.position;
+
+        camera.position = transform.position - cameraOffset; 
         camera.LookAt(transform);
         camera.RotateAround(transform.position, Vector3.up, yRotation);
         camera.RotateAround(transform.position, camera.right, xRotation);
-
-
-        RaycastHit[] hits = Physics.RaycastAll(camera.position, camera.forward, Vector3.Distance(camera.position, transform.position));
-        if(hits.Length > 1)
-        {
-            RaycastHit hit = hits[hits.Length - 2];
+        
+        RaycastHit hit;
+        if(Physics.Raycast(transform.position, -camera.forward, out hit, Vector3.Distance(camera.position, transform.position) - width / 2))
             camera.position = hit.point;
-        }
-    }
 
-    void RotatePlayer()
-    {
-        if(isWalking)
-            transform.rotation = Quaternion.Euler(0, camera.rotation.eulerAngles.y, 0);
+        idealCameraPos = camera.position;
+        camera.position = Vector3.SmoothDamp(lastCameraPos, idealCameraPos, ref camSmoothVelocity, 0.005f);
     }
 
     void Move()
     {
+        if(isWalking)
+            rb.rotation = Quaternion.Euler(0, camera.rotation.eulerAngles.y, 0);
+            
         rb.AddForce(movement.normalized * speed * (isSprinting ? sprintingCoeff : 1), ForceMode.Acceleration);
 
         if(isJumping)
@@ -136,5 +138,4 @@ public class PlayerController : MonoBehaviour
         yRotation = yRotation % 360;
         xRotation = xRotation % 360;
     }
-
 }
