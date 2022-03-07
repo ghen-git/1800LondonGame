@@ -54,8 +54,8 @@ public class RoadGenerator : MonoBehaviour
 
     void LoadStart()
     {
-        for(int x = bounds[2].x; x < bounds[1].x; x++)
-            for(int y = bounds[2].y; y < bounds[1].y; y++)
+        for(int x = bounds[2].x; x <= bounds[1].x; x++)
+            for(int y = bounds[2].y; y <= bounds[1].y; y++)
             {
                 Vector2Int block = new Vector2Int(x, y);
                 GameObject house = GameObject.Instantiate(housePrefab, new Vector3(block.x * blockSize, 0, block.y * blockSize), new Quaternion());
@@ -66,8 +66,8 @@ public class RoadGenerator : MonoBehaviour
 
     void LoadBlocks()
     {
-        for(int x = bounds[2].x; x < bounds[1].x; x++)
-            for(int y = bounds[2].y; y < bounds[1].y; y++)
+        for(int x = bounds[2].x; x <= bounds[1].x; x++)
+            for(int y = bounds[2].y; y <= bounds[1].y; y++)
             {
                 Vector2Int block = new Vector2Int(x, y);
 
@@ -82,8 +82,8 @@ public class RoadGenerator : MonoBehaviour
     }
     void UnloadBlocks()
     {
-        for(int x = loadedBounds[2].x; x < loadedBounds[1].x; x++)
-            for(int y = loadedBounds[2].y; y < loadedBounds[1].y; y++)
+        for(int x = loadedBounds[2].x; x <= loadedBounds[1].x; x++)
+            for(int y = loadedBounds[2].y; y <= loadedBounds[1].y; y++)
             {
                 Vector2Int block = new Vector2Int(x, y);
 
@@ -97,17 +97,15 @@ public class RoadGenerator : MonoBehaviour
     bool IsInBounds(Vector2Int pos, Vector2Int[] bounds)
     {
         return 
-        pos.x >= bounds[0].x && pos.y <= bounds[0].y &&
-        pos.x <= bounds[1].x && pos.y <= bounds[1].y &&
         pos.x >= bounds[2].x && pos.y >= bounds[2].y &&
-        pos.x <= bounds[3].x && pos.y >= bounds[3].y;
+        pos.x <= bounds[1].x && pos.y <= bounds[1].y;
     }
 
     void CalculateBounds()
     {
         bounds = new Vector2Int[4];
 
-        Vector2Int currentBlock = new Vector2Int((int)(player.position.x % blockSize), (int)(player.position.z % blockSize));
+        Vector2Int currentBlock = new Vector2Int((int)(player.position.x / blockSize), (int)(player.position.z / blockSize));
         print(currentBlock);
         
         bounds[0] = new Vector2Int(currentBlock.x - renderDistance, currentBlock.y + renderDistance);
