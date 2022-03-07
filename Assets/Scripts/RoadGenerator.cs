@@ -1,16 +1,138 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public class Block
+{
+    public Vector3 topLeft;
+    public Vector3 topRight;
+    public Vector3 bottomLeft;
+    public Vector3 bottomRight;
+}
+
 public class RoadGenerator : MonoBehaviour
 {
-    const int gridWidth = 20, gridHeight = 20;
+    int renderDistance = 3;
+    float blockSize = 10f;
+    Dictionary<Vector2Int, Block> worldMap = new Dictionary<Vector2Int, Block>();
+    Transform player;
+    GameObject housePrefab;
+    Vector2Int[] bounds; // top-left, top-right, bottom-left, bottom-right
+    Vector2Int[] loadedBounds; // top-left, top-right, bottom-left, bottom-right
+
+    void Start()
+    {
+        housePrefab = Resources.Load<GameObject>("shitass-house");
+        player = GameObject.Find("Player").GetComponent<Transform>();
+
+        CalculateBounds();
+        LoadStart();
+        loadedBounds = bounds;
+    }
+    
+    void Update()
+    {
+        CalculateBounds();
+        if(ShouldLoadBlocks())
+        {
+            LoadBlocks();
+            UnloadBlocks();
+            loadedBounds = bounds;
+        }
+    }
+
+    string VectToName(Vector2Int vect)
+    {
+        return vect.x.ToString() + ";" + vect.y.ToString();
+    }
+
+    Vector2Int NameToVect(string name)
+    {
+        return new Vector2Int(Convert.ToInt32(name.Split(';')[0]), Convert.ToInt32(name.Split(';')[1]));
+    }
+
+    void LoadStart()
+    {
+        for(int x = bounds[2].x; x < bounds[1].x; x++)
+            for(int y = bounds[2].y; y < bounds[1].y; y++)
+            {
+                Vector2Int block = new Vector2Int(x, y);
+                GameObject house = GameObject.Instantiate(housePrefab, new Vector3(block.x * blockSize, 0, block.y * blockSize), new Quaternion());
+                house.name = VectToName(block);
+                house.AddComponent<MeshCollider>();
+            }
+    }
+
+    void LoadBlocks()
+    {
+        for(int x = bounds[2].x; x < bounds[1].x; x++)
+            for(int y = bounds[2].y; y < bounds[1].y; y++)
+            {
+                Vector2Int block = new Vector2Int(x, y);
+
+                if(IsInBounds(block, bounds) && !IsInBounds(block, loadedBounds))
+                {
+                    GameObject house = GameObject.Instantiate(housePrefab, new Vector3(block.x * blockSize, 0, block.y * blockSize), new Quaternion());
+                    house.name = VectToName(block);
+                    house.AddComponent<MeshCollider>();
+                }
+            }
+
+    }
+    void UnloadBlocks()
+    {
+        for(int x = loadedBounds[2].x; x < loadedBounds[1].x; x++)
+            for(int y = loadedBounds[2].y; y < loadedBounds[1].y; y++)
+            {
+                Vector2Int block = new Vector2Int(x, y);
+
+                if(IsInBounds(block, loadedBounds) && !IsInBounds(block, bounds))
+                {
+                    Destroy(GameObject.Find(VectToName(block)));
+                }
+            }
+    }
+
+    bool IsInBounds(Vector2Int pos, Vector2Int[] bounds)
+    {
+        return 
+        pos.x >= bounds[0].x && pos.y <= bounds[0].y &&
+        pos.x <= bounds[1].x && pos.y <= bounds[1].y &&
+        pos.x >= bounds[2].x && pos.y >= bounds[2].y &&
+        pos.x <= bounds[3].x && pos.y >= bounds[3].y;
+    }
+
+    void CalculateBounds()
+    {
+        bounds = new Vector2Int[4];
+
+        Vector2Int currentBlock = new Vector2Int((int)(player.position.x % blockSize), (int)(player.position.z % blockSize));
+        print(currentBlock);
+        
+        bounds[0] = new Vector2Int(currentBlock.x - renderDistance, currentBlock.y + renderDistance);
+        bounds[1] = new Vector2Int(currentBlock.x + renderDistance, currentBlock.y + renderDistance);
+        bounds[2] = new Vector2Int(currentBlock.x - renderDistance, currentBlock.y - renderDistance);
+        bounds[3] = new Vector2Int(currentBlock.x + renderDistance, currentBlock.y - renderDistance);
+    }
+
+    bool ShouldLoadBlocks()
+    {
+        return 
+        !bounds[0].Equals(loadedBounds[0]) ||
+        !bounds[1].Equals(loadedBounds[1]) ||
+        !bounds[2].Equals(loadedBounds[2]) ||
+        !bounds[3].Equals(loadedBounds[3]);
+    }
+
+    #region oldGenerator
+    /*const int gridWidth = 20, gridHeight = 20;
     const float gridSpacing = 15f;
     const float maxOffset = 6f;
     const float gridStartX = -(gridWidth * gridSpacing) / 2;
     const float gridStartY = -(gridHeight * gridSpacing) / 2;
 
-    Vector2[,] roadGrid = new Vector2[gridWidth, gridHeight];
+    Vector2Int[,] roadGrid = new Vector2Int[gridWidth, gridHeight];
     List<Vector3> vertices = new List<Vector3>();
     List<int> triangles = new List<int>();
 
@@ -65,14 +187,14 @@ public class RoadGenerator : MonoBehaviour
             }
     }
 
-   Vector2 CalculateOffset()
+   Vector2Int CalculateOffset()
     {
         int direction = Random.Range(0, 360);
 
         float offsetX = Mathf.Cos(Mathf.Deg2Rad * direction) * Random.Range(0, maxOffset);
         float offsetY = Mathf.Sin(Mathf.Deg2Rad * direction) * Random.Range(0, maxOffset);
 
-        return new Vector2(offsetX, offsetY);
+        return new Vector2Int(offsetX, offsetY);
     }
 
     // void OnDrawGizmos()
@@ -91,25 +213,25 @@ public class RoadGenerator : MonoBehaviour
     //         }
     // }
 
-    void RenderCross(int x, int y)
-    {
-        //left
-        if(x - 1 >= 0)
-            RenderStake(GetVector(x, y), GetVector(x - 1, y));
-        //right
-        if(x + 1 < gridWidth)
-            RenderStake(GetVector(x, y), GetVector(x - 1, y));
-        //down
-        if(y - 1 >= 0)
-            RenderStake(GetVector(x, y), GetVector(x - 1, y));
-        //up
-        if(y + 1 < gridHeight)
-            RenderStake(GetVector(x, y), GetVector(x - 1, y));
-    }
+void RenderCross(int x, int y)
+{
+    //left
+    if(x - 1 >= 0)
+        RenderStake(GetVector(x, y), GetVector(x - 1, y));
+    //right
+    if(x + 1 < gridWidth)
+        RenderStake(GetVector(x, y), GetVector(x - 1, y));
+    //down
+    if(y - 1 >= 0)
+        RenderStake(GetVector(x, y), GetVector(x - 1, y));
+    //up
+    if(y + 1 < gridHeight)
+        RenderStake(GetVector(x, y), GetVector(x - 1, y));
+}
 
-    void RenderStake(Vector3 from, Vector3 to)
-    {
-    }
+void RenderStake(Vector3 from, Vector3 to)
+{
+}
 
     void DrawCross(int x, int y)
     {
@@ -133,5 +255,6 @@ public class RoadGenerator : MonoBehaviour
         float gridY = gridStartY + roadGrid[x, y].y + (y * gridSpacing);
 
         return new Vector3(gridX, 0, gridY);
-    }
+    }*/
+    #endregion oldGenerator
 }
