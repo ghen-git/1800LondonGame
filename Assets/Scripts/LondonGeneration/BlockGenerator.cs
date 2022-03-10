@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using static Util;
 public class Block
 {
     public Vector2 topLeft;
@@ -19,43 +19,22 @@ public class Block
     }
 }
 
-public class RoadGenerator : MonoBehaviour
+public class BlockGenerator : MonoBehaviour
 {
-    int renderDistance = 12;
-    float blockSize =100f;
-    float roadSize = 20f;
-    float variationAmount = 25f;
-    Dictionary<Vector2Int, Block> worldMap = new Dictionary<Vector2Int, Block>();
-    Transform player;
-    GameObject housePrefab;
-    Vector2Int[] bounds; // top-left, top-right, bottom-left, bottom-right
-    Vector2Int[] loadedBounds; // top-left, top-right, bottom-left, bottom-right
+    Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();
+    int renderDistance;
+    float blockSize;
+    float roadSize;
+    float variationAmount;
 
+    // Start is called before the first frame update
     void Start()
     {
-        housePrefab = Resources.Load<GameObject>("shitass-house");
-        player = GameObject.Find("Player").GetComponent<Transform>();
-
-        CalculateBounds();
-        LoadStart();
-        loadedBounds = bounds;
-    }
-    
-    void Update()
-    {
-        CalculateBounds();
-        if(ShouldLoadBlocks())
-        {
-            LoadBlocks();
-            UnloadBlocks();
-            LoadRoads();
-            loadedBounds = bounds;
-        }
-    }
-
-    void LoadRoads()
-    {
-
+        blockMap = GetComponent<LondonGenerator>().blockMap;
+        renderDistance = GetComponent<LondonGenerator>().renderDistance;
+        blockSize = GetComponent<LondonGenerator>().blockSize;
+        roadSize = GetComponent<LondonGenerator>().roadSize;
+        variationAmount = GetComponent<LondonGenerator>().variationAmount;
     }
 
     string VectToName(Vector2Int vect)
@@ -68,14 +47,14 @@ public class RoadGenerator : MonoBehaviour
         return new Vector2Int(Convert.ToInt32(name.Split(';')[0]), Convert.ToInt32(name.Split(';')[1]));
     }
 
-    void LoadStart()
+    public void LoadBlocks(Vector2Int[] bounds)
     {
         for(int x = bounds[2].x; x <= bounds[1].x; x++)
             for(int y = bounds[2].y; y <= bounds[1].y; y++)
             {
                 Vector2Int block = new Vector2Int(x, y);
 
-                if(worldMap.ContainsKey(block))
+                if(blockMap.ContainsKey(block))
                     RenderBlock(block);
                 else
                 {
@@ -87,11 +66,12 @@ public class RoadGenerator : MonoBehaviour
 
     void RenderBlock(Vector2Int coords)
     {
-        Block blockPars = worldMap[coords];
+        Block blockPars = blockMap[coords];
         GameObject block = new GameObject();
 
         MeshRenderer meshRenderer = block.AddComponent<MeshRenderer>();
-        meshRenderer.material = Resources.Load<Material>("Materials/Ground/Bricks");
+        //Resources.Load<Material>("Materials/Ground/Bricks");
+        meshRenderer.material = new Material(Shader.Find("Standard"));
 
         MeshFilter meshFilter = block.AddComponent<MeshFilter>();
 
@@ -137,17 +117,17 @@ public class RoadGenerator : MonoBehaviour
         Vector2 topLeft, topRight, bottomLeft, bottomRight;
 
         //top left corner
-        if(worldMap.ContainsKey(new Vector2Int(startCoords.x - 1, startCoords.y)))
+        if(blockMap.ContainsKey(new Vector2Int(startCoords.x - 1, startCoords.y)))
             topLeft = new Vector2
             (
-                worldMap[new Vector2Int(startCoords.x - 1, startCoords.y)].topRight.x - (blockSize - roadSize), 
-                worldMap[new Vector2Int(startCoords.x - 1, startCoords.y)].topRight.y
+                blockMap[new Vector2Int(startCoords.x - 1, startCoords.y)].topRight.x - (blockSize - roadSize), 
+                blockMap[new Vector2Int(startCoords.x - 1, startCoords.y)].topRight.y
             );
-        else if(worldMap.ContainsKey(new Vector2Int(startCoords.x, startCoords.y + 1)))
+        else if(blockMap.ContainsKey(new Vector2Int(startCoords.x, startCoords.y + 1)))
             topLeft = new Vector2
             (
-                worldMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomLeft.x, 
-                worldMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomLeft.y + (blockSize - roadSize)
+                blockMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomLeft.x, 
+                blockMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomLeft.y + (blockSize - roadSize)
             );
         else
             topLeft = new Vector2
@@ -157,17 +137,17 @@ public class RoadGenerator : MonoBehaviour
             );
 
         //top right corner
-        if(worldMap.ContainsKey(new Vector2Int(startCoords.x + 1, startCoords.y)))
+        if(blockMap.ContainsKey(new Vector2Int(startCoords.x + 1, startCoords.y)))
             topRight = new Vector2
             (
-                worldMap[new Vector2Int(startCoords.x + 1, startCoords.y)].topLeft.x + (blockSize - roadSize),
-                worldMap[new Vector2Int(startCoords.x + 1, startCoords.y)].topLeft.y
+                blockMap[new Vector2Int(startCoords.x + 1, startCoords.y)].topLeft.x + (blockSize - roadSize),
+                blockMap[new Vector2Int(startCoords.x + 1, startCoords.y)].topLeft.y
             );
-        else if(worldMap.ContainsKey(new Vector2Int(startCoords.x, startCoords.y + 1)))
+        else if(blockMap.ContainsKey(new Vector2Int(startCoords.x, startCoords.y + 1)))
             topRight = new Vector2
             (
-                worldMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomRight.x, 
-                worldMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomRight.y + (blockSize - roadSize)
+                blockMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomRight.x, 
+                blockMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomRight.y + (blockSize - roadSize)
             );
         else
             topRight = new Vector2
@@ -177,17 +157,17 @@ public class RoadGenerator : MonoBehaviour
             );
             
         //bottom left corner
-        if(worldMap.ContainsKey(new Vector2Int(startCoords.x - 1, startCoords.y)))
+        if(blockMap.ContainsKey(new Vector2Int(startCoords.x - 1, startCoords.y)))
             bottomLeft = new Vector2
             (
-                worldMap[new Vector2Int(startCoords.x - 1, startCoords.y)].bottomRight.x - (blockSize - roadSize), 
-                worldMap[new Vector2Int(startCoords.x - 1, startCoords.y)].bottomRight.y
+                blockMap[new Vector2Int(startCoords.x - 1, startCoords.y)].bottomRight.x - (blockSize - roadSize), 
+                blockMap[new Vector2Int(startCoords.x - 1, startCoords.y)].bottomRight.y
             );
-        else if(worldMap.ContainsKey(new Vector2Int(startCoords.x, startCoords.y - 1)))
+        else if(blockMap.ContainsKey(new Vector2Int(startCoords.x, startCoords.y - 1)))
             bottomLeft = new Vector2
             (
-                worldMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topLeft.x, 
-                worldMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topLeft.y - (blockSize - roadSize)
+                blockMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topLeft.x, 
+                blockMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topLeft.y - (blockSize - roadSize)
             );
         else
             bottomLeft = new Vector2
@@ -197,17 +177,17 @@ public class RoadGenerator : MonoBehaviour
             );
 
         //bottom right        
-        if(worldMap.ContainsKey(new Vector2Int(startCoords.x + 1, startCoords.y)))
+        if(blockMap.ContainsKey(new Vector2Int(startCoords.x + 1, startCoords.y)))
             bottomRight = new Vector2
             (
-                worldMap[new Vector2Int(startCoords.x + 1, startCoords.y)].bottomLeft.x + (blockSize - roadSize), 
-                worldMap[new Vector2Int(startCoords.x + 1, startCoords.y)].bottomLeft.y
+                blockMap[new Vector2Int(startCoords.x + 1, startCoords.y)].bottomLeft.x + (blockSize - roadSize), 
+                blockMap[new Vector2Int(startCoords.x + 1, startCoords.y)].bottomLeft.y
                 );
-        else if(worldMap.ContainsKey(new Vector2Int(startCoords.x, startCoords.y - 1)))
+        else if(blockMap.ContainsKey(new Vector2Int(startCoords.x, startCoords.y - 1)))
             bottomRight = new Vector2
             (
-                worldMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topRight.x, 
-                worldMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topRight.y - (blockSize - roadSize)
+                blockMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topRight.x, 
+                blockMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topRight.y - (blockSize - roadSize)
             );
         else
             bottomRight = new Vector2
@@ -222,10 +202,10 @@ public class RoadGenerator : MonoBehaviour
         print(angle);
 
         Block block = new Block(topLeft, topRight, bottomLeft, bottomRight);
-        worldMap.Add(startCoords, block);
+        blockMap.Add(startCoords, block);
     }
 
-    void LoadBlocks()
+    public void LoadBlocks(Vector2Int[] bounds, Vector2Int[] loadedBounds)
     {
         for(int x = bounds[2].x; x <= bounds[1].x; x++)
             for(int y = bounds[2].y; y <= bounds[1].y; y++)
@@ -234,7 +214,7 @@ public class RoadGenerator : MonoBehaviour
 
                 if(IsInBounds(block, bounds) && !IsInBounds(block, loadedBounds))
                 {
-                    if(worldMap.ContainsKey(block))
+                    if(blockMap.ContainsKey(block))
                         RenderBlock(block);
                     else
                     {
@@ -243,9 +223,8 @@ public class RoadGenerator : MonoBehaviour
                     }
                 }
             }
-
     }
-    void UnloadBlocks()
+    public void UnloadBlocks(Vector2Int[] bounds, Vector2Int[] loadedBounds)
     {
         for(int x = loadedBounds[2].x; x <= loadedBounds[1].x; x++)
             for(int y = loadedBounds[2].y; y <= loadedBounds[1].y; y++)
@@ -257,34 +236,5 @@ public class RoadGenerator : MonoBehaviour
                     Destroy(GameObject.Find(VectToName(block)));
                 }
             }
-    }
-
-    bool IsInBounds(Vector2Int pos, Vector2Int[] bounds)
-    {
-        return 
-        pos.x >= bounds[2].x && pos.y >= bounds[2].y &&
-        pos.x <= bounds[1].x && pos.y <= bounds[1].y;
-    }
-
-    void CalculateBounds()
-    {
-        bounds = new Vector2Int[4];
-
-        Vector2Int currentBlock = new Vector2Int((int)(player.position.x / blockSize), (int)(player.position.z / blockSize));
-        //print(currentBlock);
-        
-        bounds[0] = new Vector2Int(currentBlock.x - renderDistance, currentBlock.y + renderDistance);
-        bounds[1] = new Vector2Int(currentBlock.x + renderDistance, currentBlock.y + renderDistance);
-        bounds[2] = new Vector2Int(currentBlock.x - renderDistance, currentBlock.y - renderDistance);
-        bounds[3] = new Vector2Int(currentBlock.x + renderDistance, currentBlock.y - renderDistance);
-    }
-
-    bool ShouldLoadBlocks()
-    {
-        return 
-        !bounds[0].Equals(loadedBounds[0]) ||
-        !bounds[1].Equals(loadedBounds[1]) ||
-        !bounds[2].Equals(loadedBounds[2]) ||
-        !bounds[3].Equals(loadedBounds[3]);
     }
 }
