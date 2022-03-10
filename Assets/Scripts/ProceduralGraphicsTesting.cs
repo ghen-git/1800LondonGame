@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class ProceduralGraphicsTesting : MonoBehaviour
 {
-    float width = 5;
-    float height = 5;
 
     int[,] grid = new int[50, 50];
     // {

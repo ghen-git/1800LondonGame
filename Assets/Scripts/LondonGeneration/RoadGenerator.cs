@@ -20,6 +20,16 @@ public class RoadGenerator : MonoBehaviour
         variationAmount = GetComponent<LondonGenerator>().variationAmount;
     }
 
+    void LoadVertical()
+    {
+
+    }
+
+    void LoadHorizontal()
+    {
+
+    }
+
     public void LoadRoads(Vector2Int[] bounds)
     {
 
@@ -27,8 +37,21 @@ public class RoadGenerator : MonoBehaviour
 
     public void LoadRoads(Vector2Int[] bounds, Vector2Int[] loadedBounds)
     {
+        for(int x = bounds[2].x; x <= bounds[1].x; x++)
+            for(int y = bounds[2].y; y <= bounds[1].y; y++)
+            {
+                Vector2Int block = new Vector2Int(x, y);
 
+                if(blockMap.ContainsKey(block))
+                    RenderBlock(block);
+                else
+                {
+                    GenerateBlock(block);
+                    RenderBlock(block);
+                }
+            }
     }
+
     public void UnloadRoads(Vector2Int[] bounds, Vector2Int[] loadedBounds)
     {
 
