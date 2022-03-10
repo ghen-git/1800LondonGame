@@ -40,6 +40,11 @@ public class RoadGenerator : MonoBehaviour
         for(int x = bounds[2].x; x <= bounds[1].x; x++)
             for(int y = bounds[2].y; y <= bounds[1].y; y++)
             {
+                if(x % 2 == 0)
+                    LoadHorizontal();
+                 if(y % 2 == 0)
+                    LoadVertical();
+      
                 Vector2Int block = new Vector2Int(x, y);
 
                 if(blockMap.ContainsKey(block))
