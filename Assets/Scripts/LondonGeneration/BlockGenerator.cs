@@ -37,16 +37,6 @@ public class BlockGenerator : MonoBehaviour
         variationAmount = GetComponent<LondonGenerator>().variationAmount;
     }
 
-    string VectToName(Vector2Int vect)
-    {
-        return vect.x.ToString() + ";" + vect.y.ToString();
-    }
-
-    Vector2Int NameToVect(string name)
-    {
-        return new Vector2Int(Convert.ToInt32(name.Split(';')[0]), Convert.ToInt32(name.Split(';')[1]));
-    }
-
     public void LoadBlocks(Vector2Int[] bounds)
     {
         for(int x = bounds[2].x; x <= bounds[1].x; x++)
