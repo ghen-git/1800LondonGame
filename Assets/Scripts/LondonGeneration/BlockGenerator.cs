@@ -185,11 +185,6 @@ public class BlockGenerator : MonoBehaviour
                 ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-variationAmount, variationAmount), 
                 - ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-variationAmount, variationAmount)
             );
-        
-        float angle = Mathf.Atan2(bottomLeft.y - topLeft.y, bottomLeft.x - topLeft.x) -
-                Mathf.Atan2(topRight.y - topLeft.y, topRight.x - topLeft.x);
-        
-        print(angle);
 
         Block block = new Block(topLeft, topRight, bottomLeft, bottomRight);
         blockMap.Add(startCoords, block);

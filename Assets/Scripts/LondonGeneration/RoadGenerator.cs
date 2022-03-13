@@ -169,21 +169,21 @@ public class RoadGenerator : MonoBehaviour
         //roads center
         Vector2 pos = QuadCenter
         (
-            blockMap[block].topLeft,
-            blockMap[block].topRight,
-            new Vector2(blockMap[new Vector2Int(block.x, block.y + 1)].bottomLeft.x, blockMap[new Vector2Int(block.x, block.y + 1)].bottomLeft.y + blockSize),
-            new Vector2(blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight.x, blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight.y + blockSize)
+            blockMap[block].bottomRight,
+            new Vector2(-blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft.x + blockSize, blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft.y),
+            blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight,
+            new Vector2(-blockMap[new Vector2Int(block.x + 1, block.y + 1)].topLeft.x + blockSize, blockMap[new Vector2Int(block.x + 1, block.y + 1)].topLeft.y + blockSize)
         ); 
         pos = pos + (new Vector2(block.x, block.y) * blockSize);
 
         //road top left
-        center[0] = blockMap[new Vector2Int(block.x, block.y + 1)].bottomLeft + (new Vector2(block.x, block.y + 1) * blockSize) - pos;
+        center[0] = blockMap[block].bottomRight + (new Vector2(block.x, block.y) * blockSize) - pos;
         //road top right
-        center[1] = blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight + (new Vector2(block.x, block.y + 1) * blockSize) - pos;
+        center[1] = blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft + (new Vector2(block.x + 1, block.y) * blockSize) - pos;
         //road bottom left
-        center[2] = blockMap[block].topLeft + (new Vector2(block.x, block.y) * blockSize) - pos;
+        center[2] = blockMap[new Vector2Int(block.x, block.y + 1)].topRight + (new Vector2(block.x, block.y + 1) * blockSize) - pos;
         //road bottom right
-        center[3] = blockMap[block].topRight + (new Vector2(block.x, block.y) * blockSize) - pos;
+        center[3] = blockMap[new Vector2Int(block.x + 1, block.y + 1)].topLeft + (new Vector2(block.x + 1, block.y + 1) * blockSize) - pos;
 
         //quads rendering
         RenderQuad(center, pos, VectToName(block) + "center");
