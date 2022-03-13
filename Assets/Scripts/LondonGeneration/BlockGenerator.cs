@@ -28,7 +28,7 @@ public class BlockGenerator : MonoBehaviour
     float variationAmount;
 
     // Start is called before the first frame update
-    void Start()
+    public void Init()
     {
         blockMap = GetComponent<LondonGenerator>().blockMap;
         renderDistance = GetComponent<LondonGenerator>().renderDistance;
@@ -48,6 +48,8 @@ public class BlockGenerator : MonoBehaviour
                     RenderBlock(block);
                 else
                 {
+                    print(blockMap.Count);
+
                     GenerateBlock(block);
                     RenderBlock(block);
                 }

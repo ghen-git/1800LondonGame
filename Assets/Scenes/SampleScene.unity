@@ -439,8 +439,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1431673913}
   - component: {fileID: 1431673914}
-  - component: {fileID: 1431673916}
   - component: {fileID: 1431673915}
+  - component: {fileID: 1431673916}
   m_Layer: 0
   m_Name: London
   m_TagString: Untagged

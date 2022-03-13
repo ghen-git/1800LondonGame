@@ -12,7 +12,7 @@ public class RoadGenerator : MonoBehaviour
     float roadSize;
     float variationAmount;
     // Start is called before the first frame update
-    void Start()
+    public void Init()
     {
         blockMap = GetComponent<LondonGenerator>().blockMap;
         renderDistance = GetComponent<LondonGenerator>().renderDistance;
@@ -169,10 +169,10 @@ public class RoadGenerator : MonoBehaviour
         //roads center
         Vector2 pos = QuadCenter
         (
-            blockMap[block].bottomRight,
-            new Vector2(-blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft.x + blockSize, blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft.y),
+            blockMap[block].topRight,
+            new Vector2(-blockMap[new Vector2Int(block.x + 1, block.y)].topLeft.x + blockSize, blockMap[new Vector2Int(block.x + 1, block.y)].topLeft.y),
             blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight,
-            new Vector2(-blockMap[new Vector2Int(block.x + 1, block.y + 1)].topLeft.x + blockSize, blockMap[new Vector2Int(block.x + 1, block.y + 1)].topLeft.y + blockSize)
+            new Vector2(-blockMap[new Vector2Int(block.x + 1, block.y + 1)].bottomLeft.x + blockSize, blockMap[new Vector2Int(block.x + 1, block.y + 1)].bottomLeft.y + blockSize)
         ); 
         pos = pos + (new Vector2(block.x, block.y) * blockSize);
 

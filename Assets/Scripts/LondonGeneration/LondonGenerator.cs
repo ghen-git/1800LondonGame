@@ -29,6 +29,8 @@ public class LondonGenerator : MonoBehaviour
         roadGenerator = GetComponent<RoadGenerator>();
 
         CalculateBounds();
+        blockGenerator.Init();
+        roadGenerator.Init();
         blockGenerator.LoadBlocks(bounds);
         roadGenerator.LoadRoads(bounds);
         loadedBounds = bounds;
