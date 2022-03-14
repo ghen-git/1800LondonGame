@@ -28,23 +28,13 @@ public class BlockGenerator : MonoBehaviour
     float variationAmount;
 
     // Start is called before the first frame update
-    void Start()
+    public void Init()
     {
         blockMap = GetComponent<LondonGenerator>().blockMap;
         renderDistance = GetComponent<LondonGenerator>().renderDistance;
         blockSize = GetComponent<LondonGenerator>().blockSize;
         roadSize = GetComponent<LondonGenerator>().roadSize;
         variationAmount = GetComponent<LondonGenerator>().variationAmount;
-    }
-
-    string VectToName(Vector2Int vect)
-    {
-        return vect.x.ToString() + ";" + vect.y.ToString();
-    }
-
-    Vector2Int NameToVect(string name)
-    {
-        return new Vector2Int(Convert.ToInt32(name.Split(';')[0]), Convert.ToInt32(name.Split(';')[1]));
     }
 
     public void LoadBlocks(Vector2Int[] bounds)
@@ -58,6 +48,8 @@ public class BlockGenerator : MonoBehaviour
                     RenderBlock(block);
                 else
                 {
+                    print(blockMap.Count);
+
                     GenerateBlock(block);
                     RenderBlock(block);
                 }
@@ -195,11 +187,6 @@ public class BlockGenerator : MonoBehaviour
                 ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-variationAmount, variationAmount), 
                 - ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-variationAmount, variationAmount)
             );
-        
-        float angle = Mathf.Atan2(bottomLeft.y - topLeft.y, bottomLeft.x - topLeft.x) -
-                Mathf.Atan2(topRight.y - topLeft.y, topRight.x - topLeft.x);
-        
-        print(angle);
 
         Block block = new Block(topLeft, topRight, bottomLeft, bottomRight);
         blockMap.Add(startCoords, block);

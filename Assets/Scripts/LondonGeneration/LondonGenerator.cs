@@ -13,6 +13,7 @@ public class LondonGenerator : MonoBehaviour
     public float roadSize = 20f;
     [System.NonSerialized]
     public float variationAmount = 25f;
+    [System.NonSerialized]
     public Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();
     Transform player;
     Vector2Int[] bounds; // top-left, top-right, bottom-left, bottom-right
@@ -28,6 +29,8 @@ public class LondonGenerator : MonoBehaviour
         roadGenerator = GetComponent<RoadGenerator>();
 
         CalculateBounds();
+        blockGenerator.Init();
+        roadGenerator.Init();
         blockGenerator.LoadBlocks(bounds);
         roadGenerator.LoadRoads(bounds);
         loadedBounds = bounds;
