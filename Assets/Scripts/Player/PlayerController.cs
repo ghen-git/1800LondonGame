@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     const float airDrag = 1f;
     const float sprintingCoeff = 2f;
     const float mouseSensitivity = 2f;
+    const float clippingFixAmount = 1.2f;
     Vector3 cameraOffset = new Vector3(-3, -1, 4.86f);
     const float height = 2;
     const float width = 2;
@@ -74,10 +75,14 @@ public class PlayerController : MonoBehaviour
         camera.LookAt(transform);
         camera.RotateAround(transform.position, Vector3.up, yRotation);
         camera.RotateAround(transform.position, camera.right, xRotation);
+
+        Vector3 clippingFix = camera.forward * clippingFixAmount;
         
         RaycastHit hit;
-        if(Physics.Raycast(transform.position, -camera.forward, out hit, Vector3.Distance(camera.position, transform.position) - width / 2))
-            camera.position = hit.point;
+        if(Physics.Raycast(transform.position, -camera.forward, out hit, Vector3.Distance(camera.position, transform.position) - width / 2 + clippingFixAmount))
+        {
+            camera.position = hit.point + clippingFix;
+        }
 
         idealCameraPos = camera.position;
         camera.position = Vector3.SmoothDamp(lastCameraPos, idealCameraPos, ref camSmoothVelocity, 0.005f);
