@@ -39,7 +39,7 @@ public class RoadGenerator : MonoBehaviour
             new Vector3(vertxs[0].x, 0, vertxs[0].y), //top left 0
             new Vector3(vertxs[1].x, 0, vertxs[1].y), //top right 1 
             new Vector3(vertxs[2].x, 0, vertxs[2].y), //bottom left 2 
-            new Vector3(vertxs[3].x, 0, vertxs[3].y) //bottom right 3
+            new Vector3(vertxs[3].x, 0, vertxs[3].y)  //bottom right 3
         };
         mesh.vertices = vertices;
 
