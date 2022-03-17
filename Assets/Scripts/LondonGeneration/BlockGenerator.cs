@@ -22,8 +22,6 @@ public class Block
 
 public class BlockGenerator : MonoBehaviour
 {
-    List<Vector2> initialPoss;
-    List<Vector2> fixedPoss;
     Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();
     int renderDistance;
     float blockSize;
@@ -38,9 +36,6 @@ public class BlockGenerator : MonoBehaviour
         blockSize = GetComponent<LondonGenerator>().blockSize;
         roadSize = GetComponent<LondonGenerator>().roadSize;
         variationAmount = GetComponent<LondonGenerator>().variationAmount;
-
-        initialPoss = new List<Vector2>();
-        fixedPoss = new List<Vector2>();
     }
 
     public void LoadBlocks(Vector2Int[] bounds)
@@ -198,7 +193,6 @@ public class BlockGenerator : MonoBehaviour
 
     Vector2 RoadSpace(Vector2 left, Vector2 center, Vector2 right, Vector2Int startCoords)
     {
-        initialPoss.Add(center + (new Vector2(startCoords.x, startCoords.y) * blockSize));
 
         Vector2 left1 = new Vector2(left.x - center.x, left.y - center.y);
         Vector2 center1 = new Vector2(0, 0);
@@ -213,17 +207,8 @@ public class BlockGenerator : MonoBehaviour
         newPoint = new Vector2(center.x - newPoint.x, center.y - newPoint.y);
 
         print(newPoint);
-        fixedPoss.Add(newPoint + (new Vector2(startCoords.x, startCoords.y) * blockSize));
 
         return newPoint;
-    }
-
-    void OnDrawGizmos()
-    {
-        foreach(Vector2 poss in initialPoss)
-            Gizmos.DrawSphere(new Vector3(poss.x, 0, poss.y), 0.4f);
-        foreach(Vector2 poss in fixedPoss)
-            Gizmos.DrawSphere(new Vector3(poss.x, 0, poss.y), 1f);
     }
 
     public void LoadBlocks(Vector2Int[] bounds, Vector2Int[] loadedBounds)

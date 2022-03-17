@@ -342,7 +342,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -421,7 +421,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1222904285}
-  m_Material: {fileID: 13400000, guid: ae2eda3945f9f6e4f848e68a14dead01, type: 2}
+  m_Material: {fileID: 13400000, guid: d8742b8ad1a45d947af469d4355b3864, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.5

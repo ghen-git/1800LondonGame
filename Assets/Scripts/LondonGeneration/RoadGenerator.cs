@@ -46,7 +46,7 @@ public class RoadGenerator : MonoBehaviour
         int[] tris = new int[]
         {
             2, 0, 3,
-            0, 1, 3
+            3, 0, 1
         };
         mesh.triangles = tris;
 
@@ -57,7 +57,7 @@ public class RoadGenerator : MonoBehaviour
             new Vector2(0, 1),
             new Vector2(1, 1)
         };
-        mesh.uv = uv;
+        mesh.uv = CalculateUVs(vertxs, pos);
 
         meshFilter.mesh = mesh;
         mesh.RecalculateTangents();
@@ -66,6 +66,38 @@ public class RoadGenerator : MonoBehaviour
         road.transform.position = new Vector3(pos.x, 0, pos.y);
         road.name = name;
         road.AddComponent<MeshCollider>();
+    }
+
+    Vector2[] CalculateUVs(Vector2[] vertices, Vector2 pos)
+    {
+        Vector2[] worldVertices = new Vector2[4]
+        {
+            vertices[0] + pos,
+            vertices[1] + pos,
+            vertices[2] + pos,
+            vertices[3] + pos
+        };
+        Vector2[] uvs = new Vector2[4];
+
+        float width = Vector2.Distance(vertices[0], vertices[1]);
+        float height = Vector2.Distance(vertices[0], vertices[2]);
+        
+        if(width > height)
+        {
+            uvs[0] = new Vector2(-width / 2, -height / 2);
+            uvs[1] = new Vector2(width / 2, -height / 2);
+            uvs[2] = new Vector2(-width / 2, height / 2);
+            uvs[3] = new Vector2(width / 2, height / 2);
+        }
+        else
+        {
+            uvs[0] = new Vector2(-width / 2, -height / 2);
+            uvs[1] = new Vector2(width / 2, -height / 2);
+            uvs[2] = new Vector2(-width / 2, height / 2);
+            uvs[3] = new Vector2(width / 2, height / 2);
+        }
+
+        return uvs;
     }
 
     void RenderRoad(Vector2Int block)
