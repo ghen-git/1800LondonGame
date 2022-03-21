@@ -28,7 +28,7 @@ public class RoadGenerator : MonoBehaviour
 
         MeshRenderer meshRenderer = road.AddComponent<MeshRenderer>();
 
-        meshRenderer.material = Resources.Load<Material>("Materials/Ground/Bricks");
+        meshRenderer.material = Resources.Load<Material>("Materials/Ground/TestBricks");
 
         MeshFilter meshFilter = road.AddComponent<MeshFilter>();
 
@@ -49,14 +49,7 @@ public class RoadGenerator : MonoBehaviour
             3, 0, 1
         };
         mesh.triangles = tris;
-
-        Vector2[] uv = new Vector2[4]
-        {
-            new Vector2(0, 0),
-            new Vector2(1, 0),
-            new Vector2(0, 1),
-            new Vector2(1, 1)
-        };
+        
         mesh.uv = CalculateUVs(vertxs, pos);
 
         meshFilter.mesh = mesh;
