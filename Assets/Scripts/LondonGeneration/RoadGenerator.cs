@@ -10,7 +10,8 @@ public class RoadGenerator : MonoBehaviour
     int renderDistance;
     float blockSize;
     float roadSize;
-    float variationAmount;
+    float blockSizeVariation;
+    float roadSizeVariation;
     // Start is called before the first frame update
     public void Init()
     {
@@ -18,7 +19,8 @@ public class RoadGenerator : MonoBehaviour
         renderDistance = GetComponent<LondonGenerator>().renderDistance;
         blockSize = GetComponent<LondonGenerator>().blockSize;
         roadSize = GetComponent<LondonGenerator>().roadSize;
-        variationAmount = GetComponent<LondonGenerator>().variationAmount;
+        blockSizeVariation = GetComponent<LondonGenerator>().blockSizeVariation;
+        roadSizeVariation = GetComponent<LondonGenerator>().roadSizeVariation;
     }
 
     void RenderQuad(Vector2[] vertxs, Vector2 pos, string name)

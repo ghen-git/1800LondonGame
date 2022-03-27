@@ -10,9 +10,11 @@ public class LondonGenerator : MonoBehaviour
     [System.NonSerialized]
     public float blockSize =100f;
     [System.NonSerialized]
-    public float roadSize = 20f;
+    public float roadSize = 15f;
     [System.NonSerialized]
-    public float variationAmount = 25f;
+    public float blockSizeVariation = 25f;
+    [System.NonSerialized]
+    public float roadSizeVariation = 5f;
     [System.NonSerialized]
     public Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();
     Transform player;
