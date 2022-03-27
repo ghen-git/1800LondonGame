@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     const float airDrag = 1f;
     const float sprintingCoeff = 2f;
     const float mouseSensitivity = 2f;
+    const float clippingFixAmount = 1f;
     Vector3 cameraOffset = new Vector3(-3, -1, 4.86f);
     const float height = 2;
     const float width = 2;
@@ -76,8 +77,10 @@ public class PlayerController : MonoBehaviour
         camera.RotateAround(transform.position, camera.right, xRotation);
         
         RaycastHit hit;
-        if(Physics.Raycast(transform.position, -camera.forward, out hit, Vector3.Distance(camera.position, transform.position) - width / 2))
-            camera.position = hit.point;
+        if(Physics.Raycast(transform.position, -camera.forward, out hit, Vector3.Distance(camera.position, transform.position) - width / 2 + clippingFixAmount))
+        {
+            camera.position = hit.point + Vector3.up * clippingFixAmount / Vector3.Distance(camera.position, transform.position);
+        }
 
         idealCameraPos = camera.position;
         camera.position = Vector3.SmoothDamp(lastCameraPos, idealCameraPos, ref camSmoothVelocity, 0.005f);
@@ -136,6 +139,6 @@ public class PlayerController : MonoBehaviour
         yRotation += Input.GetAxis("Mouse X") * mouseSensitivity;
         xRotation -= Input.GetAxis("Mouse Y") * mouseSensitivity;
         yRotation = yRotation % 360;
-        xRotation = xRotation % 360;
+        xRotation = Mathf.Clamp(xRotation, -70, 70);
     }
 }

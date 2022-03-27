@@ -10,6 +10,7 @@ public class Block
     public Vector2 bottomLeft;
     public Vector2 bottomRight;
 
+
     public Block(Vector2 topLeft, Vector2 topRight, Vector2 bottomLeft, Vector2 bottomRight)
     {
         this.topLeft = topLeft;
@@ -50,8 +51,6 @@ public class BlockGenerator : MonoBehaviour
                     RenderBlock(block);
                 else
                 {
-                    print(blockMap.Count);
-
                     GenerateBlock(block);
                     RenderBlock(block);
                 }
@@ -192,6 +191,26 @@ public class BlockGenerator : MonoBehaviour
 
         Block block = new Block(topLeft, topRight, bottomLeft, bottomRight);
         blockMap.Add(startCoords, block);
+    }
+
+    Vector2 RoadSpace(Vector2 left, Vector2 center, Vector2 right, Vector2Int startCoords)
+    {
+
+        Vector2 left1 = new Vector2(left.x - center.x, left.y - center.y);
+        Vector2 center1 = new Vector2(0, 0);
+        Vector2 right1 = new Vector2(right.x - center.x, right.y - center.y);
+
+        float angle = Mathf.Atan2(right1.y, right1.x) - Mathf.Atan2(left1.y, left1.x);
+
+        float otherLeg = (roadSize / 2) * Mathf.Tan((Mathf.PI/2) - (angle / 2));
+        float hypothenuse = Mathf.Sqrt(Mathf.Pow(roadSize / 2, 2) + Mathf.Pow(otherLeg, 2));
+
+        Vector2 newPoint = new Vector2(Mathf.Cos(angle / 2), Mathf.Sin(angle / 2)) * hypothenuse;
+        newPoint = new Vector2(center.x - newPoint.x, center.y - newPoint.y);
+
+        print(newPoint);
+
+        return newPoint;
     }
 
     public void LoadBlocks(Vector2Int[] bounds, Vector2Int[] loadedBounds)

@@ -6,15 +6,21 @@ using UnityEngine;
 public class LondonGenerator : MonoBehaviour
 {
     [System.NonSerialized]
-    public int renderDistance = 12;
+    public int renderDistance = 8;
     [System.NonSerialized]
-    public float blockSize =100f;
+    public float blockSize =200f;
     [System.NonSerialized]
+<<<<<<< HEAD
     public float roadSize = 15f;
     [System.NonSerialized]
     public float blockSizeVariation = 25f;
     [System.NonSerialized]
     public float roadSizeVariation = 5f;
+=======
+    public float roadSize = 30f;
+    [System.NonSerialized]
+    public float variationAmount = 200f / 4;
+>>>>>>> 6df254d118399f601cad93d391258e28a6c80f4e
     [System.NonSerialized]
     public Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();
     Transform player;
