@@ -28,7 +28,7 @@ public class RoadGenerator : MonoBehaviour
 
         MeshRenderer meshRenderer = road.AddComponent<MeshRenderer>();
 
-        meshRenderer.material = Resources.Load<Material>("Materials/Ground/TestBricks");
+        meshRenderer.material = Resources.Load<Material>("Materials/Ground/Road");
 
         MeshFilter meshFilter = road.AddComponent<MeshFilter>();
 
@@ -74,20 +74,22 @@ public class RoadGenerator : MonoBehaviour
 
         float width = Vector2.Distance(vertices[0], vertices[1]);
         float height = Vector2.Distance(vertices[0], vertices[2]);
+
+        float scale = 0.15f;
         
         if(width > height)
         {
-            uvs[0] = new Vector2(-width / 2, -height / 2);
-            uvs[1] = new Vector2(width / 2, -height / 2);
-            uvs[2] = new Vector2(-width / 2, height / 2);
-            uvs[3] = new Vector2(width / 2, height / 2);
+            uvs[0] = new Vector2(-width / 2, -height / 2) * scale;
+            uvs[1] = new Vector2(width / 2, -height / 2) * scale;
+            uvs[2] = new Vector2(-width / 2, height / 2) * scale;
+            uvs[3] = new Vector2(width / 2, height / 2) * scale;
         }
         else
         {
-            uvs[0] = new Vector2(-width / 2, -height / 2);
-            uvs[1] = new Vector2(width / 2, -height / 2);
-            uvs[2] = new Vector2(-width / 2, height / 2);
-            uvs[3] = new Vector2(width / 2, height / 2);
+            uvs[0] = new Vector2(-width / 2, -height / 2) * scale;
+            uvs[1] = new Vector2(width / 2, -height / 2) * scale;
+            uvs[2] = new Vector2(-width / 2, height / 2) * scale;
+            uvs[3] = new Vector2(width / 2, height / 2) * scale;
         }
 
         return uvs;
