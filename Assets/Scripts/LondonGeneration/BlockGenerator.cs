@@ -91,6 +91,7 @@ public class Line
 
 public class Block
 {
+    public GameObject block;
     public Vector2 topLeft;
     public Vector2 topRight;
     public Vector2 bottomLeft;
@@ -151,7 +152,7 @@ public class BlockGenerator : MonoBehaviour
     {
         Block block = blockMap[coords];
         RenderBlock(coords);
-        buildingGenerator.RenderBuildings(block);
+        buildingGenerator.RenderBuildings(block, coords);
     }
 
     public void LoadBlocks(Vector2Int[] bounds)
@@ -175,7 +176,7 @@ public class BlockGenerator : MonoBehaviour
     {
         Block block = GenerateBounds(startCoords);
         
-        block.direction = Convert.ToBoolean(UnityEngine.Random.Range(0, 1));
+        block.direction = RandomChance(50, 100);
 
         block.buildings = buildingGenerator.GenerateBuildings(block);
 
@@ -228,6 +229,8 @@ public class BlockGenerator : MonoBehaviour
         block.transform.position = new Vector3(coords.x * blockSize, 0, coords.y * blockSize);
         block.name = VectToName(coords);
         block.AddComponent<MeshCollider>();
+        
+        blockPars.block = block;
     }
 
     Block GenerateBounds(Vector2Int coords)

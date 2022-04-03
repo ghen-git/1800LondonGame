@@ -35,14 +35,9 @@ public static class Util
     {
         return Mathf.Atan2(right.y - center.y, right.x - center.x) - Mathf.Atan2(left.y - center.y, left.x - center.x);
     }
-    
-    public static bool RandomChance(float passing, float max)
-    {
-        return UnityEngine.Random.Range(0, max) >= passing;
-    }
 
-    public static bool RandomChance(int passing, int max)
+    public static bool RandomChance(int percentage, int max)
     {
-        return UnityEngine.Random.Range(0, max) >= passing;
+        return UnityEngine.Random.Range(0, max) <= percentage;
     }
 }
