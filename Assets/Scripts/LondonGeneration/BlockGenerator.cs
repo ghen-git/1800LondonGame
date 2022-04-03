@@ -144,10 +144,6 @@ public class BlockGenerator : MonoBehaviour
         roadSize = GetComponent<LondonGenerator>().roadSize;
         blockSizeVariation = GetComponent<LondonGenerator>().blockSizeVariation;
         roadSizeVariation = GetComponent<LondonGenerator>().roadSizeVariation;
-<<<<<<< HEAD
-
-        newPoints = new List<Vector2>();
-=======
         buildingGenerator = GetComponent<BuildingGenerator>();
     }
 
@@ -156,7 +152,6 @@ public class BlockGenerator : MonoBehaviour
         Block block = blockMap[coords];
         RenderBlock(coords);
         buildingGenerator.RenderBuildings(block);
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
     }
 
     public void LoadBlocks(Vector2Int[] bounds)
@@ -243,152 +238,83 @@ public class BlockGenerator : MonoBehaviour
         if(blockMap.ContainsKey(new Vector2Int(coords.x - 1, coords.y)))
             topLeft = new Vector2
             (
-<<<<<<< HEAD
-                blockMap[new Vector2Int(startCoords.x - 1, startCoords.y)].topRight.x - blockSize, 
-                blockMap[new Vector2Int(startCoords.x - 1, startCoords.y)].topRight.y
-=======
                 blockMap[new Vector2Int(coords.x - 1, coords.y)].topRight.x - (blockSize - roadSize), 
                 blockMap[new Vector2Int(coords.x - 1, coords.y)].topRight.y
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
             );
         else if(blockMap.ContainsKey(new Vector2Int(coords.x, coords.y + 1)))
             topLeft = new Vector2
             (
-<<<<<<< HEAD
-                blockMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomLeft.x, 
-                blockMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomLeft.y + blockSize
-=======
                 blockMap[new Vector2Int(coords.x, coords.y + 1)].bottomLeft.x, 
-                blockMap[new Vector2Int(coords.x, coords.y + 1)].bottomLeft.y + (blockSize - roadSize)
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
+                - ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation)
             );
-        else
+        else 
             topLeft = new Vector2
             (
-<<<<<<< HEAD
-                - (blockSize / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation), 
-                (blockSize / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation)
-=======
                 - ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation), 
                 ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation)
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
             );
 
         //top right corner
         if(blockMap.ContainsKey(new Vector2Int(coords.x + 1, coords.y)))
             topRight = new Vector2
             (
-<<<<<<< HEAD
-                blockMap[new Vector2Int(startCoords.x + 1, startCoords.y)].topLeft.x + blockSize,
-                blockMap[new Vector2Int(startCoords.x + 1, startCoords.y)].topLeft.y
-=======
-                blockMap[new Vector2Int(coords.x + 1, coords.y)].topLeft.x + (blockSize - roadSize),
-                blockMap[new Vector2Int(coords.x + 1, coords.y)].topLeft.y
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
+                blockMap[new Vector2Int(coords.x, coords.y + 1)].bottomRight.x, 
+                blockMap[new Vector2Int(coords.x, coords.y + 1)].bottomRight.y + (blockSize - roadSize)
             );
         else if(blockMap.ContainsKey(new Vector2Int(coords.x, coords.y + 1)))
             topRight = new Vector2
             (
-<<<<<<< HEAD
-                blockMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomRight.x, 
-                blockMap[new Vector2Int(startCoords.x, startCoords.y + 1)].bottomRight.y + blockSize
-=======
                 blockMap[new Vector2Int(coords.x, coords.y + 1)].bottomRight.x, 
                 blockMap[new Vector2Int(coords.x, coords.y + 1)].bottomRight.y + (blockSize - roadSize)
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
             );
         else
             topRight = new Vector2
             (
-<<<<<<< HEAD
-                (blockSize / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation), 
-                (blockSize / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation)
-=======
                 ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation), 
                 ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation)
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
             );
             
-        //bottom left corner
+        //bottom left corner 
         if(blockMap.ContainsKey(new Vector2Int(coords.x - 1, coords.y)))
             bottomLeft = new Vector2
             (
-<<<<<<< HEAD
-                blockMap[new Vector2Int(startCoords.x - 1, startCoords.y)].bottomRight.x - blockSize, 
-                blockMap[new Vector2Int(startCoords.x - 1, startCoords.y)].bottomRight.y
-=======
                 blockMap[new Vector2Int(coords.x - 1, coords.y)].bottomRight.x - (blockSize - roadSize), 
                 blockMap[new Vector2Int(coords.x - 1, coords.y)].bottomRight.y
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
             );
         else if(blockMap.ContainsKey(new Vector2Int(coords.x, coords.y - 1)))
             bottomLeft = new Vector2
             (
-<<<<<<< HEAD
-                blockMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topLeft.x, 
-                blockMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topLeft.y - blockSize
-=======
                 blockMap[new Vector2Int(coords.x, coords.y - 1)].topLeft.x, 
                 blockMap[new Vector2Int(coords.x, coords.y - 1)].topLeft.y - (blockSize - roadSize)
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
             );
         else
             bottomLeft = new Vector2
             (
-<<<<<<< HEAD
-                - (blockSize / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation),
-                - (blockSize / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation)
-=======
                 - ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation),
                 - ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation)
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
             );
 
         //bottom right        
         if(blockMap.ContainsKey(new Vector2Int(coords.x + 1, coords.y)))
             bottomRight = new Vector2
             (
-<<<<<<< HEAD
-                blockMap[new Vector2Int(startCoords.x + 1, startCoords.y)].bottomLeft.x + blockSize, 
-                blockMap[new Vector2Int(startCoords.x + 1, startCoords.y)].bottomLeft.y
-=======
                 blockMap[new Vector2Int(coords.x + 1, coords.y)].bottomLeft.x + (blockSize - roadSize), 
                 blockMap[new Vector2Int(coords.x + 1, coords.y)].bottomLeft.y
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
                 );
         else if(blockMap.ContainsKey(new Vector2Int(coords.x, coords.y - 1)))
             bottomRight = new Vector2
             (
-<<<<<<< HEAD
-                blockMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topRight.x, 
-                blockMap[new Vector2Int(startCoords.x, startCoords.y - 1)].topRight.y - blockSize
-=======
                 blockMap[new Vector2Int(coords.x, coords.y - 1)].topRight.x, 
                 blockMap[new Vector2Int(coords.x, coords.y - 1)].topRight.y - (blockSize - roadSize)
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
             );
         else
             bottomRight = new Vector2
             (
-<<<<<<< HEAD
-                (blockSize / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation), 
-                - (blockSize / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation)
-            );
-
-        RoadSpace(bottomLeft, topLeft, topRight, startCoords);
-        RoadSpace(topLeft, topRight, bottomRight, startCoords);
-        RoadSpace(topRight, bottomRight, bottomLeft, startCoords);
-        RoadSpace(bottomRight, bottomLeft, topLeft, startCoords);
-
-        Block block = new Block(topLeft, topRight, bottomLeft, bottomRight);
-        blockMap.Add(startCoords, block);
-=======
                 ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation), 
                 - ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation)
             );
 
         return new Block(topLeft, topRight, bottomLeft, bottomRight);
->>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
     }
 
     Vector2 RoadSpace(Vector2 left, Vector2 center, Vector2 right, Vector2Int startCoords)
