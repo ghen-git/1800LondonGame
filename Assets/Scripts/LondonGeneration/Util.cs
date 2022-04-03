@@ -31,8 +31,19 @@ public static class Util
         return new Vector2(xs / 4, ys / 4);
     }
 
+<<<<<<< HEAD
     public static float AngleFrom3Points(Vector2 left, Vector2 center, Vector2 right)
     {
         return Mathf.Atan2(right.y - center.y, right.x - center.x) - Mathf.Atan2(left.y - center.y, left.x - center.x);
+=======
+    public static bool RandomChance(float passing, float max)
+    {
+        return UnityEngine.Random.Range(0, max) >= passing;
+    }
+
+    public static bool RandomChance(int passing, int max)
+    {
+        return UnityEngine.Random.Range(0, max) >= passing;
+>>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
     }
 }

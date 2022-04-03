@@ -10,10 +10,18 @@ public class LondonGenerator : MonoBehaviour
     [System.NonSerialized]
     public float blockSize =200f;
     [System.NonSerialized]
+<<<<<<< HEAD
     public float roadSize = 25f;
     [System.NonSerialized]
     public float blockSizeVariation = 200f / 4;
     public float roadSizeVariation = 15f;
+=======
+    public float roadSize = 15f;
+    [System.NonSerialized]
+    public float blockSizeVariation = 25f;
+    [System.NonSerialized]
+    public float roadSizeVariation = 5f;
+>>>>>>> 4bc3eba7bb70e3f5ef9fcf3ecc5fb9d7b9411531
 
     [System.NonSerialized]
     public Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();
@@ -28,6 +36,7 @@ public class LondonGenerator : MonoBehaviour
         player = GameObject.Find("Player").GetComponent<Transform>();
 
         blockGenerator = GetComponent<BlockGenerator>();
+        roadGenerator = GetComponent<RoadGenerator>();
         roadGenerator = GetComponent<RoadGenerator>();
 
         CalculateBounds();
