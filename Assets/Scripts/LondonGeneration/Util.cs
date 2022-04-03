@@ -30,4 +30,14 @@ public static class Util
 
         return new Vector2(xs / 4, ys / 4);
     }
+
+    public static bool RandomChance(float passing, float max)
+    {
+        return UnityEngine.Random.Range(0, max) >= passing;
+    }
+
+    public static bool RandomChance(int passing, int max)
+    {
+        return UnityEngine.Random.Range(0, max) >= passing;
+    }
 }
