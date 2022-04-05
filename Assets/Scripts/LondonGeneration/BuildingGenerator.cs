@@ -32,9 +32,6 @@ public class BuildingGenerator : MonoBehaviour
 
     Building GenerateBuilding(Block block, bool vertical)
     {
-        float width = UnityEngine.Random.Range(2, 4) * buildingScale;
-        float depth = GetDepth() * buildingScale;
-
         Vector2 topLeftBound, bottomLeftBound, topRightBound, bottomRightBound;
 
         if(!vertical)
