@@ -51,6 +51,14 @@ public class Line
         );
     }
 
+    public Line PerpendicularAtPoint(Vector2 p)
+    {
+        float m = -1 / this.m;
+        float q = p.y - (m * p.x);
+        
+        return new Line(m, q);
+    }
+
     public Vector2 PointOnLine(Vector2 a, Vector2 b, float distance)
     {
         float xc = a.x - (distance * (a.x - b.x)) / Vector2.Distance(a, b);
