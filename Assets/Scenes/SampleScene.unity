@@ -521,6 +521,7 @@ GameObject:
   - component: {fileID: 1431673914}
   - component: {fileID: 1431673915}
   - component: {fileID: 1431673916}
+  - component: {fileID: 1431673917}
   m_Layer: 0
   m_Name: London
   m_TagString: Untagged
@@ -555,6 +556,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81d467f3b4f90df41bf3bbc895b1fda5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  roadSizeVariation: 15
 --- !u!114 &1431673915
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -577,5 +579,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4ee82bc69ef43d4ea7698a6d0df6f51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1431673917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1431673911}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 329670664aa497a49a18b18d17b78970, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

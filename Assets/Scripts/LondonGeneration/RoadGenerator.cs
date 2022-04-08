@@ -145,57 +145,7 @@ public class RoadGenerator : MonoBehaviour
         RenderQuad(verticalRoad, verticalCenter, VectToName(block) + "vertical");
         RenderQuad(horizontalRoad, horizontalCenter, VectToName(block) + "horizontal");
     }
-
-    void RenderBackwardsRoad(Vector2Int block)
-    {
-        Vector2[] verticalRoad = new Vector2[4];
-        Vector2[] horizontalRoad = new Vector2[4];
-        
-        //frequently used formulas calculation for performance
-        Vector2 xy = new Vector2(block.x, block.y) * blockSize;
-        Vector2 x1y = new Vector2(block.x - 1, block.y) * blockSize;
-        Vector2 xy1 = new Vector2(block.x, block.y - 1) * blockSize;
-        Vector2 x1y1 = new Vector2(block.x - 1, block.y - 1) * blockSize;
-
-        //roads centers
-        Vector2 verticalCenter = QuadCenter
-        (
-            blockMap[new Vector2Int(block.x - 1, block.y)].topRight + x1y,
-            blockMap[block].topLeft + xy,
-            blockMap[new Vector2Int(block.x - 1, block.y)].bottomRight + x1y,
-            blockMap[block].bottomLeft + xy
-        );
-        Vector2 horizontalCenter = QuadCenter
-        (
-            blockMap[block].bottomLeft + xy,
-            blockMap[block].bottomRight + xy,
-            blockMap[new Vector2Int(block.x, block.y - 1)].topLeft + xy1,
-            blockMap[new Vector2Int(block.x, block.y - 1)].topRight + xy1
-        );
-
-        //vertical road top left
-        verticalRoad[0] = blockMap[new Vector2Int(block.x - 1, block.y)].topRight + x1y - verticalCenter;
-        //vertical road top right
-        verticalRoad[1] = blockMap[block].topLeft + xy - verticalCenter;
-        //vertical road bottom left
-        verticalRoad[2] = blockMap[new Vector2Int(block.x - 1, block.y)].bottomRight + x1y - verticalCenter;
-        //vertical road bottom right
-        verticalRoad[3] = blockMap[block].bottomLeft + xy - verticalCenter;
-
-        //horizontal road top left
-        horizontalRoad[0] = blockMap[block].bottomLeft + xy - horizontalCenter;
-        //horizontal road top right
-        horizontalRoad[1] = blockMap[block].bottomRight + xy - horizontalCenter;
-        //horizontal road bottom left
-        horizontalRoad[2] = blockMap[new Vector2Int(block.x, block.y - 1)].topLeft + xy1 - horizontalCenter;
-        //horizontal road bottom right
-        horizontalRoad[3] = blockMap[new Vector2Int(block.x, block.y - 1)].topRight + xy1 - horizontalCenter;
-
-        //quads rendering
-        RenderQuad(verticalRoad, verticalCenter, VectToName(block) + "vertical");
-        RenderQuad(horizontalRoad, horizontalCenter, VectToName(block) + "horizontal");
-    }
-
+    
     void RenderCenter(Vector2Int block)
     {
         Vector2[] centerRoad = new Vector2[4];
@@ -223,38 +173,6 @@ public class RoadGenerator : MonoBehaviour
         centerRoad[2] = blockMap[block].topRight + xy - centerPos;
         //center road bottom right
         centerRoad[3] = blockMap[new Vector2Int(block.x + 1, block.y)].topLeft + x1y - centerPos;
-
-        //quads rendering
-        RenderQuad(centerRoad, centerPos, VectToName(block) + "center");
-    }
-
-    void RenderBackwardsCenter(Vector2Int block)
-    {
-        Vector2[] centerRoad = new Vector2[4];
-        
-        //frequently used formulas calculation for performance
-        Vector2 xy = new Vector2(block.x, block.y) * blockSize;
-        Vector2 x1y = new Vector2(block.x - 1, block.y) * blockSize;
-        Vector2 xy1 = new Vector2(block.x, block.y - 1) * blockSize;
-        Vector2 x1y1 = new Vector2(block.x - 1, block.y - 1) * blockSize;
-
-        //roads centers
-        Vector2 centerPos = QuadCenter
-        (
-            blockMap[new Vector2Int(block.x, block.y - 1)].bottomRight + xy1,
-            blockMap[new Vector2Int(block.x - 1, block.y - 1)].bottomLeft + x1y1,
-            blockMap[block].topRight + xy,
-            blockMap[new Vector2Int(block.x - 1, block.y)].topLeft + x1y
-        );
-
-        //center road top left
-        centerRoad[0] = blockMap[new Vector2Int(block.x, block.y - 1)].bottomRight + xy1 - centerPos;
-        //center road top right
-        centerRoad[1] = blockMap[new Vector2Int(block.x - 1, block.y - 1)].bottomLeft + x1y1 - centerPos;
-        //center road bottom left
-        centerRoad[2] = blockMap[block].topRight + xy - centerPos;
-        //center road bottom right
-        centerRoad[3] = blockMap[new Vector2Int(block.x - 1, block.y)].topLeft + x1y - centerPos;
 
         //quads rendering
         RenderQuad(centerRoad, centerPos, VectToName(block) + "center");
