@@ -33,33 +33,89 @@ public class BuildingGenerator : MonoBehaviour
     float secondaryRoadSize = 4f;
     float insetScale = 4f;
 
-    Building GenerateBuilding(Block block, float depth, float inset, float width, bool rightConstraint)
+    Building GenerateBuilding(Block block, float depth, float inset, bool rightConstraint, float initialDistance, Vector2 top, Vector2 bottom, Line edge)
     {
         Vector2 topPivot, bottomPivot;
         Vector2 topLeftBound, bottomLeftBound, topRightBound, bottomRightBound;
         Line bottomP, topP, leftP, rightP;
         
-        float segmentLength;
+        float segmentLength = Vector2.Distance(top, bottom);
 
         if(!block.direction) //horizontal generation
         {
-            segmentLength = Vector2.Distance(block.topLeft, block.bottomLeft);
             if(!rightConstraint)
             {
-                topPivot = block.topLeft;
-                bottomPivot = block.leftEdge.PointOnLine(block.topLeft, block.bottomLeft, width);
+                topPivot = top;
+                bottomPivot = edge.PointOnLine(top, bottom, initialDistance);
 
-                bottomP = block.leftEdge.PerpendicularAtPoint(bottomPivot);
-                topP = Line.ParallelAtPoint(block.topEdge, topPivot);
+                bottomP = edge.PerpendicularAtPoint(bottomPivot);
+                topP = block.topEdge;
             }
             else
             {
-                topPivot = block.leftEdge.PointOnLine(block.topLeft, block.bottomLeft, segmentLength - width);
-                bottomPivot = block.bottomLeft;
+                topPivot = edge.PointOnLine(top, bottom, segmentLength - initialDistance);
+                bottomPivot = bottom;
 
-                bottomP = Line.ParallelAtPoint(block.bottomEdge, bottomPivot);
-                topP = block.leftEdge.PerpendicularAtPoint(topPivot);
+                bottomP = block.bottomEdge;
+                topP = edge.PerpendicularAtPoint(topPivot);
             }
+
+            topLeftBound = topP.PointOnLine(topPivot, topP.PointFromX(block.topRight.x + 1), inset);
+            topRightBound = topP.PointOnLine(topPivot, topP.PointFromX(block.topRight.x + 1), depth + inset);
+            bottomLeftBound = bottomP.PointOnLine(bottomPivot, bottomP.PointFromX(block.bottomRight.x + 1), inset);
+            bottomRightBound = bottomP.PointOnLine(bottomPivot, bottomP.PointFromX(block.bottomRight.x + 1), depth + inset);
+        }
+        else //vertical generation
+        {
+            if(!rightConstraint)
+            {
+                topPivot = top;
+                bottomPivot = edge.PointOnLine(top, bottom, initialDistance);
+
+                leftP = edge.PerpendicularAtPoint(bottomPivot);
+                rightP = block.rightEdge;
+            }
+            else
+            {
+                topPivot = edge.PointOnLine(top, bottom, segmentLength - initialDistance);
+                bottomPivot = bottom;
+
+                leftP = block.leftEdge;
+                rightP = edge.PerpendicularAtPoint(topPivot);
+            }
+            
+
+            topLeftBound = leftP.PointOnLine(bottomPivot, leftP.PointFromY(block.bottomLeft.y + 1), inset);
+            topRightBound = rightP.PointOnLine(topPivot, rightP.PointFromY(block.bottomRight.y + 1), inset);
+            bottomLeftBound = leftP.PointOnLine(bottomPivot, leftP.PointFromY(block.bottomLeft.y + 1), depth + inset);
+            bottomRightBound = rightP.PointOnLine(topPivot, rightP.PointFromY(block.bottomRight.y + 1), depth + inset);
+        }
+
+        return new Building(topLeftBound, topRightBound, bottomLeftBound, bottomRightBound);
+    }
+
+    Building GenerateBuilding(Block block, float width, float depth, float inset, float startDistance, bool rightConstraint, Vector2 top, Vector2 bottom, Line edge)
+    {
+        Vector2 topPivot, bottomPivot;
+        Vector2 topLeftBound, bottomLeftBound, topRightBound, bottomRightBound;
+
+        float segmentLength = Vector2.Distance(top, bottom);
+
+        if(!block.direction) //horizontal generation
+        {
+            if(!rightConstraint)
+            {
+                topPivot = edge.PointOnLine(top, bottom, startDistance);
+                bottomPivot = edge.PointOnLine(top, bottom, startDistance + width);
+            }
+            else
+            {
+                topPivot = edge.PointOnLine(top, bottom, segmentLength - startDistance - width);
+                bottomPivot = edge.PointOnLine(top, bottom, segmentLength - startDistance);
+            }
+            
+            Line bottomP = edge.PerpendicularAtPoint(bottomPivot);
+            Line topP = edge.PerpendicularAtPoint(topPivot);
 
             topLeftBound = topP.PointOnLine(topPivot, topP.PointFromX(block.topRight.x), inset);
             topRightBound = topP.PointOnLine(topPivot, topP.PointFromX(block.topRight.x), depth + inset);
@@ -68,94 +124,24 @@ public class BuildingGenerator : MonoBehaviour
         }
         else //vertical generation
         {
-            segmentLength = Vector2.Distance(block.topRight, block.topLeft);
             if(!rightConstraint)
             {
-                topPivot = block.topRight;
-                bottomPivot = block.topEdge.PointOnLine(block.topRight, block.topLeft, width);
-
-                leftP = block.topEdge.PerpendicularAtPoint(bottomPivot);
-                rightP = Line.ParallelAtPoint(block.rightEdge, topPivot);
+                topPivot = edge.PointOnLine(top, bottom, startDistance);
+                bottomPivot = edge.PointOnLine(top, bottom, startDistance + width);
             }
             else
             {
-                topPivot = block.topEdge.PointOnLine(block.topRight, block.topLeft, segmentLength - width);
-                bottomPivot = block.topLeft;
-
-                leftP = Line.ParallelAtPoint(block.leftEdge, bottomPivot);
-                rightP = block.topEdge.PerpendicularAtPoint(topPivot);
+                topPivot = edge.PointOnLine(top, bottom, segmentLength - startDistance - width);
+                bottomPivot = edge.PointOnLine(top, bottom, segmentLength - startDistance);
             }
             
+            Line leftP = edge.PerpendicularAtPoint(bottomPivot);
+            Line rightP = edge.PerpendicularAtPoint(topPivot);
 
             topLeftBound = leftP.PointOnLine(bottomPivot, leftP.PointFromY(block.bottomLeft.y), inset);
             topRightBound = rightP.PointOnLine(topPivot, rightP.PointFromY(block.bottomRight.y), inset);
             bottomLeftBound = leftP.PointOnLine(bottomPivot, leftP.PointFromY(block.bottomLeft.y), depth + inset);
             bottomRightBound = rightP.PointOnLine(topPivot, rightP.PointFromY(block.bottomRight.y), depth + inset);
-        }
-
-        return new Building(topLeftBound, topRightBound, bottomLeftBound, bottomRightBound);
-    }
-
-    Building GenerateBuilding(Block block, float width, float depth, float inset, float startDistance, bool rightConstraint, float rowOffset)
-    {
-        Vector2 topPivot, bottomPivot;
-        Vector2 topLeftBound, bottomLeftBound, topRightBound, bottomRightBound;
-        
-        Vector2 top, bottom;
-
-        if(!block.direction)
-        {
-            top = block.topEdge.PointOnLine(block.topLeft, block.topRight, rowOffset);
-            bottom = block.bottomEdge.PointOnLine(block.bottomLeft, block.bottomRight, rowOffset);
-        }
-        else
-        {
-            top = block.rightEdge.PointOnLine(block.topRight, block.bottomRight, rowOffset);
-            bottom = block.leftEdge.PointOnLine(block.topLeft, block.bottomLeft, rowOffset);
-        }
-        float segmentLength = Vector2.Distance(top, bottom);
-
-        if(!block.direction) //horizontal generation
-        {
-            if(!rightConstraint)
-            {
-                topPivot = block.leftEdge.PointOnLine(block.topLeft, block.bottomLeft, startDistance);
-                bottomPivot = block.leftEdge.PointOnLine(block.topLeft, block.bottomLeft, startDistance + width);
-            }
-            else
-            {
-                topPivot = block.leftEdge.PointOnLine(block.topLeft, block.bottomLeft, segmentLength - startDistance - width);
-                bottomPivot = block.leftEdge.PointOnLine(block.topLeft, block.bottomLeft, segmentLength - startDistance);
-            }
-            
-            Line bottomP = block.leftEdge.PerpendicularAtPoint(bottomPivot);
-            Line topP = block.leftEdge.PerpendicularAtPoint(topPivot);
-
-            topLeftBound = topP.PointOnLine(topPivot, topP.PointFromX(block.topRight.x), rowOffset + inset);
-            topRightBound = topP.PointOnLine(topPivot, topP.PointFromX(block.topRight.x), rowOffset + depth + inset);
-            bottomLeftBound = bottomP.PointOnLine(bottomPivot, bottomP.PointFromX(block.bottomRight.x), rowOffset + inset);
-            bottomRightBound = bottomP.PointOnLine(bottomPivot, bottomP.PointFromX(block.bottomRight.x), rowOffset + depth + inset);
-        }
-        else //vertical generation
-        {
-            if(!rightConstraint)
-            {
-                topPivot = block.topEdge.PointOnLine(block.topRight, block.topLeft, startDistance);
-                bottomPivot = block.topEdge.PointOnLine(block.topRight, block.topLeft, startDistance + width);
-            }
-            else
-            {
-                topPivot = block.topEdge.PointOnLine(block.topRight, block.topLeft, segmentLength - startDistance - width);
-                bottomPivot = block.topEdge.PointOnLine(block.topRight, block.topLeft, segmentLength - startDistance);
-            }
-            
-            Line leftP = block.topEdge.PerpendicularAtPoint(bottomPivot);
-            Line rightP = block.topEdge.PerpendicularAtPoint(topPivot);
-
-            topLeftBound = leftP.PointOnLine(bottomPivot, leftP.PointFromY(block.bottomLeft.y), rowOffset + inset);
-            topRightBound = rightP.PointOnLine(topPivot, rightP.PointFromY(block.bottomRight.y), rowOffset + inset);
-            bottomLeftBound = leftP.PointOnLine(bottomPivot, leftP.PointFromY(block.bottomLeft.y), rowOffset + depth + inset);
-            bottomRightBound = rightP.PointOnLine(topPivot, rightP.PointFromY(block.bottomRight.y), rowOffset + depth + inset);
         }
 
         return new Building(topLeftBound, topRightBound, bottomLeftBound, bottomRightBound);
@@ -183,15 +169,18 @@ public class BuildingGenerator : MonoBehaviour
         float maxRowDepth;
         float rowOffset = 0;
         int rowStep = 0;
+
+        Vector2 top, bottom;
+        Line edge;
         
         do
         {
+            //variable resetting
             startWithHouse = RandomChance(50, 100);
             maxRowDepth = 0;
             buildStep = 0;
-
-            Vector2 top, bottom;
-
+        
+            //row offset alignment calculation
             if(!block.direction)
             {
                 top = block.topEdge.PointOnLine(block.topLeft, block.topRight, rowOffset);
@@ -204,6 +193,9 @@ public class BuildingGenerator : MonoBehaviour
             }
             segmentLength = Vector2.Distance(top, bottom);
 
+            edge = new Line(top, bottom);
+
+            //first building
             if(startWithHouse)
             {
                 float width = Random.Range(1, maxBuildWidth + 1) * buildingScale;
@@ -211,7 +203,7 @@ public class BuildingGenerator : MonoBehaviour
                 if(depth > 1 * buildingScale)
                     width = 1 * buildingScale;
                 float inset = Random.Range(1, maxBuildInset + 1) * insetScale;
-                leftBuilding = GenerateBuilding(block, width, depth, inset, segmentLength / 2 - width / 2, false, rowOffset);
+                leftBuilding = GenerateBuilding(block, width, depth, inset, segmentLength / 2 - width / 2, false, top, bottom, edge);
                 leftBDistance = segmentLength / 2 - width / 2;
                 
                 buildings.Add(new Vector2Int(0, rowStep), leftBuilding);
@@ -236,8 +228,8 @@ public class BuildingGenerator : MonoBehaviour
                 rightInset = Random.Range(1, maxBuildInset + 1) * insetScale;
 
                 float startDistance = segmentLength / 2 - secondaryRoadSize / 2;
-                leftBuilding = GenerateBuilding(block, leftWidth, leftDepth, leftInset, startDistance - leftWidth, false, rowOffset);
-                rightBuilding = GenerateBuilding(block, rightWidth, rightDepth, rightInset, startDistance - rightWidth, true, rowOffset);
+                leftBuilding = GenerateBuilding(block, leftWidth, leftDepth, leftInset, startDistance - leftWidth, false, top, bottom, edge);
+                rightBuilding = GenerateBuilding(block, rightWidth, rightDepth, rightInset, startDistance - rightWidth, true, top, bottom, edge);
 
                 leftBDistance = startDistance - leftWidth;
                 rightBDistance = startDistance - rightWidth;
@@ -252,33 +244,47 @@ public class BuildingGenerator : MonoBehaviour
                     maxRowDepth = rightDepth + rightInset;
             }
 
+            //building generation loop that runs until BDistances are negative from both corners
             do
             {
-                leftWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
-                leftDepth = GetDepth() * buildingScale;
-                if(leftDepth > 1 * buildingScale)
-                    leftWidth = 1 * buildingScale;
-                leftInset = Random.Range(1, maxBuildInset + 1) * insetScale;
-                rightWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
-                rightDepth = GetDepth() * buildingScale;
-                if(rightDepth > 1 * buildingScale)
-                    rightWidth = 1 * buildingScale;
-                rightInset = Random.Range(1, maxBuildInset + 1) * insetScale;
+                //if the building reached the edge, it just waits for the loop to end and closes up
+                //with a corner building    
+                if(leftBDistance - secondaryRoadSize - maxBuildWidth * buildingScale > 0)
+                {
+                    leftWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                    leftDepth = GetDepth() * buildingScale;
+                    if(leftDepth > 1 * buildingScale)
+                        leftWidth = 1 * buildingScale;
+                    leftInset = Random.Range(1, maxBuildInset + 1) * insetScale;
 
-                leftBDistance = leftBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - leftWidth;
-                rightBDistance = rightBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - rightWidth;
+                    leftBDistance = leftBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - leftWidth;
 
-                leftBuilding = GenerateBuilding(block, leftWidth, leftDepth, leftInset, leftBDistance, false, rowOffset);
-                rightBuilding = GenerateBuilding(block, rightWidth, rightDepth, rightInset, rightBDistance, true, rowOffset);
-
-                buildings.Add(new Vector2Int(buildStep, rowStep), leftBuilding);
-                buildings.Add(new Vector2Int(-buildStep, rowStep), rightBuilding);
-                buildStep++;
+                    leftBuilding = GenerateBuilding(block, leftWidth, leftDepth, leftInset, leftBDistance, false, top, bottom, edge);
+                    
+                    buildings.Add(new Vector2Int(buildStep, rowStep), leftBuilding);
                 
-                if(leftDepth + leftInset > maxRowDepth)
-                    maxRowDepth = leftDepth + leftInset;
-                if(rightDepth + rightInset > maxRowDepth)
-                    maxRowDepth = rightDepth + rightInset;
+                    if(leftDepth + leftInset > maxRowDepth)
+                        maxRowDepth = leftDepth + leftInset;
+                }
+
+                if(rightBDistance - secondaryRoadSize - maxBuildWidth * buildingScale > 0)
+                {
+                    rightWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                    rightDepth = GetDepth() * buildingScale;
+                    if(rightDepth > 1 * buildingScale)
+                        rightWidth = 1 * buildingScale;
+                    rightInset = Random.Range(1, maxBuildInset + 1) * insetScale;
+
+                    rightBDistance = rightBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - rightWidth;
+
+                    rightBuilding = GenerateBuilding(block, rightWidth, rightDepth, rightInset, rightBDistance, true, top, bottom, edge);
+
+                    buildings.Add(new Vector2Int(-buildStep, rowStep), rightBuilding);
+
+                    if(rightDepth + rightInset > maxRowDepth)
+                        maxRowDepth = rightDepth + rightInset;
+                }
+                buildStep++;
             }
             while(canFitMoreBuildings(block, leftBDistance, rightBDistance));
 
@@ -293,12 +299,15 @@ public class BuildingGenerator : MonoBehaviour
 
             leftBDistance = leftBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0);
             rightBDistance = rightBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0);
-            
-            leftBuilding = GenerateBuilding(block, leftDepth, leftInset, leftBDistance, false);
-            rightBuilding = GenerateBuilding(block, rightDepth, rightInset, rightBDistance, true); 
 
-            buildings.Add(new Vector2Int(buildStep, rowStep), leftBuilding);
-            buildings.Add(new Vector2Int(-buildStep, rowStep), rightBuilding);
+            leftBuilding = GenerateBuilding(block, leftDepth, leftInset, false, leftBDistance, top, bottom, edge);
+            rightBuilding = GenerateBuilding(block, rightDepth, rightInset, true, rightBDistance, top, bottom, edge); 
+
+            if(Vector2.Distance(leftBuilding.topLeftCorner, leftBuilding.bottomLeftCorner) >= buildingScale)
+                buildings.Add(new Vector2Int(buildStep, rowStep), leftBuilding);
+
+            if(Vector2.Distance(rightBuilding.topLeftCorner, rightBuilding.bottomLeftCorner) >= buildingScale)
+                buildings.Add(new Vector2Int(-buildStep, rowStep), rightBuilding);
 
             if(leftDepth + leftInset > maxRowDepth)
                 maxRowDepth = leftDepth + leftInset;
@@ -307,9 +316,109 @@ public class BuildingGenerator : MonoBehaviour
 
             rowOffset += maxRowDepth + secondaryRoadSize;
             rowStep++;
-            print(rowOffset);
         }
-        while(canFitMoreRows(block, rowOffset));     
+        while(canFitMoreRows(block, rowOffset));
+
+        //-------------------- FINAL ROW --------------------
+        if(canFitLastRow(block, rowOffset))
+        {
+            //variable resetting
+            startWithHouse = RandomChance(50, 100);
+            buildStep = 0;
+        
+            //row offset alignment calculation
+            if(!block.direction)
+            {
+                top = block.topEdge.PointOnLine(block.topLeft, block.topRight, rowOffset);
+                bottom = block.bottomEdge.PointOnLine(block.bottomLeft, block.bottomRight, rowOffset);
+            }
+            else
+            {
+                top = block.rightEdge.PointOnLine(block.topRight, block.bottomRight, rowOffset);
+                bottom = block.leftEdge.PointOnLine(block.topLeft, block.bottomLeft, rowOffset);
+            }
+            segmentLength = Vector2.Distance(top, bottom);
+
+            edge = new Line(top, bottom);
+
+            //first building
+            if(startWithHouse)
+            {
+                float width = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+
+                leftBuilding = GenerateBuilding(block, width, buildingScale, 0, segmentLength / 2 - width / 2, false, top, bottom, edge);
+                leftBDistance = segmentLength / 2 - width / 2;
+                
+                buildings.Add(new Vector2Int(0, rowStep), leftBuilding);
+                buildStep = 1;
+
+                rightBDistance = segmentLength / 2 - width / 2;
+            }
+            else
+            {
+                leftWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                rightWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+
+                float startDistance = segmentLength / 2 - secondaryRoadSize / 2;
+                leftBuilding = GenerateBuilding(block, leftWidth, buildingScale, 0, startDistance - leftWidth, false, top, bottom, edge);
+                rightBuilding = GenerateBuilding(block, rightWidth, buildingScale, 0, startDistance - rightWidth, true, top, bottom, edge);
+
+                leftBDistance = startDistance - leftWidth;
+                rightBDistance = startDistance - rightWidth;
+
+                if(Vector2.Distance(leftBuilding.bottomLeftCorner, leftBuilding.bottomRightCorner) <= leftWidth)
+                    buildings.Add(new Vector2Int(1, rowStep), leftBuilding);
+                if(Vector2.Distance(rightBuilding.bottomLeftCorner, rightBuilding.bottomRightCorner) <= rightWidth)
+                    buildings.Add(new Vector2Int(-1, rowStep), rightBuilding);
+                buildStep = 2;
+            }
+
+            //building generation loop that runs until BDistances are negative from both corners
+            do
+            {
+                //if the building reached the edge, it just waits for the loop to end and closes up
+                //with a corner building    
+                if(leftBDistance - secondaryRoadSize - maxBuildWidth * buildingScale > 0)
+                {
+                    leftWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+
+                    leftBDistance = leftBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - leftWidth;
+
+                    leftBuilding = GenerateBuilding(block, leftWidth, buildingScale, 0, leftBDistance, false, top, bottom, edge);
+                    
+                    if(Vector2.Distance(leftBuilding.bottomLeftCorner, leftBuilding.bottomRightCorner) <= leftWidth)
+                        buildings.Add(new Vector2Int(buildStep, rowStep), leftBuilding);
+                }
+
+                if(rightBDistance - secondaryRoadSize - maxBuildWidth * buildingScale > 0)
+                {
+                    rightWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+
+                    rightBDistance = rightBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - rightWidth;
+
+                    rightBuilding = GenerateBuilding(block, rightWidth, buildingScale, 0, rightBDistance, true, top, bottom, edge);
+
+                    if(Vector2.Distance(rightBuilding.bottomLeftCorner, rightBuilding.bottomRightCorner) <= rightWidth)
+                        buildings.Add(new Vector2Int(-buildStep, rowStep), rightBuilding);
+                }
+                buildStep++;
+            }
+            while(canFitMoreBuildings(block, leftBDistance, rightBDistance));
+
+            leftBDistance = leftBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0);
+            rightBDistance = rightBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0);
+
+            leftBuilding = GenerateBuilding(block, buildingScale, 0, false, leftBDistance, top, bottom, edge);
+            rightBuilding = GenerateBuilding(block, buildingScale, 0, true, rightBDistance, top, bottom, edge); 
+
+            if(Vector2.Distance(leftBuilding.topLeftCorner, leftBuilding.bottomLeftCorner) >= buildingScale)
+                if(Vector2.Distance(leftBuilding.bottomLeftCorner, leftBuilding.bottomRightCorner) <= Vector2.Distance(leftBuilding.topLeftCorner, leftBuilding.topRightCorner))
+                    buildings.Add(new Vector2Int(buildStep, rowStep), leftBuilding);
+
+            if(Vector2.Distance(rightBuilding.topLeftCorner, rightBuilding.bottomLeftCorner) >= buildingScale)
+                if(Vector2.Distance(rightBuilding.bottomLeftCorner, rightBuilding.bottomRightCorner) <= Vector2.Distance(rightBuilding.topLeftCorner, rightBuilding.topRightCorner))
+                    buildings.Add(new Vector2Int(-buildStep, rowStep), rightBuilding);
+        }
 
         return buildings;
     }
@@ -346,7 +455,28 @@ public class BuildingGenerator : MonoBehaviour
             );
 
         return 
-            segmentLength - rowOffset > 0;
+            segmentLength - rowOffset - maxBuildDepth * buildingScale > 0;
+    }
+    
+    bool canFitLastRow(Block block, float rowOffset)
+    {
+        float segmentLength;
+
+        if(!block.direction)
+            segmentLength = Vector2.Distance
+            (
+                Line.MidPoint(block.topLeft, block.bottomLeft), 
+                Line.MidPoint(block.topRight, block.bottomRight)
+            );
+        else
+            segmentLength = Vector2.Distance
+            (
+                Line.MidPoint(block.topRight, block.topLeft), 
+                Line.MidPoint(block.bottomRight, block.bottomLeft)
+            );
+
+        return 
+            segmentLength - rowOffset - buildingScale > 0;
     }
 
     void OnDrawGizmos()
