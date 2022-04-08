@@ -35,8 +35,8 @@ public class Line
     {
         return new Vector2
         (
-            (a.x - b.x) / 2,
-            (a.y - b.y) / 2
+            (a.x + b.x) / 2,
+            (a.y + b.y) / 2
         );
     }
     
@@ -64,6 +64,13 @@ public class Line
         float xc = a.x - (distance * (a.x - b.x)) / Vector2.Distance(a, b);
 
         return PointFromX(xc);
+    }
+
+    public static Vector2 Intersection(Line a, Line b)
+    {
+        float x = (-b.q - -a.q) / (-a.m - -b.m);
+        float y = (-a.q*-b.m - -b.q*-a.m) / (-a.m - -b.m);
+        return new Vector2(x, y);
     }
 
     public Vector2 PointOnLine(Vector2 p, float distance, bool getRight = true)

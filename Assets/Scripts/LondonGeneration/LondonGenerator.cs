@@ -6,7 +6,7 @@ using UnityEngine;
 public class LondonGenerator : MonoBehaviour
 {
     [System.NonSerialized]
-    public int renderDistance = 8;
+    public int renderDistance = 4;
     [System.NonSerialized]
     public float blockSize =200f;
     [System.NonSerialized]
