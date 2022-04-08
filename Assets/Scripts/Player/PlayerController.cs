@@ -93,6 +93,10 @@ public class PlayerController : MonoBehaviour
             
         rb.AddForce(movement.normalized * speed * (isSprinting ? sprintingCoeff : 1), ForceMode.Acceleration);
 
+        //more gravity since it doesnt work for some reason
+        if(!isGrounded && rb.velocity.y < 0)
+            rb.AddForce(Vector3.down * jumpForce * 10);
+
         if(isJumping)
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
     }
