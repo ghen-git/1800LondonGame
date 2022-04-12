@@ -149,8 +149,6 @@ public class BlockGenerator : MonoBehaviour
     float roadSizeVariation;
     BuildingGenerator buildingGenerator;
 
-    List<Vector2> newPoints;
-
     // Start is called before the first frame update
     public void Init()
     {
@@ -350,12 +348,6 @@ public class BlockGenerator : MonoBehaviour
         print("at angle_:" + angleToXAxis);
 
         return new Vector2();
-    }
-
-    void OnDrawGizmos()
-    {
-        foreach(Vector2 point in newPoints)
-            Gizmos.DrawSphere(new Vector3(point.x, 0, point.y), 1f);
     }
 
     public void LoadBlocks(Vector2Int[] bounds, Vector2Int[] loadedBounds)

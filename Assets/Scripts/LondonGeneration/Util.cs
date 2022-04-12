@@ -36,6 +36,22 @@ public static class Util
         return Mathf.Atan2(right.y - center.y, right.x - center.x) - Mathf.Atan2(left.y - center.y, left.x - center.x);
     }
 
+    public static float TriangleArea(Vector2 a, Vector2 b, Vector2 c)
+    {
+        return (1f/2f) * Mathf.Abs((a.x - c.x) * (b.y - a.y) - (a.x - b.x) * (c.y - a.y));
+    }
+
+    public static bool PointInQuad(Vector2 p, Block quad)
+    {
+        float quadArea = TriangleArea(quad.bottomLeft, quad.topLeft, quad.topRight) + TriangleArea(quad.bottomLeft, quad.topRight, quad.bottomRight);
+
+        float pointArea = 
+        TriangleArea(quad.bottomLeft, quad.topLeft, p) + TriangleArea(quad.bottomLeft, quad.bottomRight, p) + 
+        TriangleArea(quad.topLeft, quad.topRight, p) + TriangleArea(quad.topRight, quad.bottomRight, p);
+
+        return pointArea - quadArea < 0.1f;
+    }
+
     public static bool RandomChance(int percentage, int max)
     {
         return UnityEngine.Random.Range(0, max) <= percentage;
