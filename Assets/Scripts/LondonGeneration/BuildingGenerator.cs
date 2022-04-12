@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Util;
+using static LondonSettings;
 
 public class Building
 {
@@ -22,17 +23,6 @@ public class Building
 
 public class BuildingGenerator : MonoBehaviour
 {
-    [System.NonSerialized]
-    public float blockSize =200f;
-
-    float floorHeight = 5f;
-    int maxFloors = 5;
-    float buildingScale = 10f;
-    int maxBuildDepth = 3;
-    int maxBuildWidth = 2;
-    int maxBuildInset = 2;
-    float secondaryRoadSize = 3f;
-    float insetScale = 2f;
     string[] wallMaterials = new string[]
     {
         "BrownBricks", "WornRedBricks", "BeigeBricks", "BlackBricks"
@@ -512,7 +502,7 @@ public class BuildingGenerator : MonoBehaviour
         2 - bottomLeft
         3 - bottomRight
     */
-    GameObject RenderWalls(Vector2[] groundPoints, Vector2 pos, float height, string name, string textureName)
+    GameObject RenderWalls(Vector2[] groundPoints, Vector2 pos, float height, bool vertical, string name, string textureName)
     {
         
         GameObject wall = new GameObject();
@@ -549,8 +539,9 @@ public class BuildingGenerator : MonoBehaviour
             new Vector3(groundPoints[2].x, height, groundPoints[2].y), //top left 12
             new Vector3(groundPoints[3].x, height, groundPoints[3].y), //top right 13 
             new Vector3(groundPoints[2].x, 0, groundPoints[2].y), //bottom left 14 
-            new Vector3(groundPoints[3].x, 0, groundPoints[3].y)  //bottom right 15
+            new Vector3(groundPoints[3].x, 0, groundPoints[3].y),  //bottom right 15
         };
+        
         mesh.vertices = vertices;
 
         int[] tris = new int[]
@@ -645,7 +636,7 @@ public class BuildingGenerator : MonoBehaviour
             buildingGO.transform.SetParent(block.block.transform, true);
 
             //walls rendering
-            GameObject walls = RenderWalls(groundPoints, center, building.floorNumber * floorHeight, buildingGO.name + "-walls", wallMaterials[Random.Range(0, wallMaterials.Length)]);
+            GameObject walls = RenderWalls(groundPoints, center, building.floorNumber * floorHeight, block.direction, buildingGO.name + "-walls", wallMaterials[Random.Range(0, wallMaterials.Length)]);
             walls.transform.SetParent(buildingGO.transform, true);
         }
     }

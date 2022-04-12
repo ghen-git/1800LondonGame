@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Util;
+using static LondonSettings;
 
 public class Line
 {
@@ -142,22 +143,12 @@ public class Block
 public class BlockGenerator : MonoBehaviour
 {
     Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();
-    int renderDistance;
-    float blockSize;
-    float roadSize;
-    float blockSizeVariation;
-    float roadSizeVariation;
     BuildingGenerator buildingGenerator;
 
     // Start is called before the first frame update
     public void Init()
     {
         blockMap = GetComponent<LondonGenerator>().blockMap;
-        renderDistance = GetComponent<LondonGenerator>().renderDistance;
-        blockSize = GetComponent<LondonGenerator>().blockSize;
-        roadSize = GetComponent<LondonGenerator>().roadSize;
-        blockSizeVariation = GetComponent<LondonGenerator>().blockSizeVariation;
-        roadSizeVariation = GetComponent<LondonGenerator>().roadSizeVariation;
         buildingGenerator = GetComponent<BuildingGenerator>();
     }
 
@@ -202,8 +193,8 @@ public class BlockGenerator : MonoBehaviour
         GameObject block = new GameObject();
 
         MeshRenderer meshRenderer = block.AddComponent<MeshRenderer>();
-        //Resources.Load<Material>("Materials/Ground/Bricks");
-        meshRenderer.material = new Material(Shader.Find("Standard"));
+
+        meshRenderer.material = Resources.Load<Material>($"Materials/Ground/SecondaryRoad");
 
         MeshFilter meshFilter = block.AddComponent<MeshFilter>();
 
@@ -226,12 +217,14 @@ public class BlockGenerator : MonoBehaviour
         };
         mesh.triangles = tris;
 
+        float uvScale = 0.3f;
+        
         Vector2[] uv = new Vector2[4]
         {
-            new Vector2(0, 0),
-            new Vector2(1, 0),
-            new Vector2(0, 1),
-            new Vector2(1, 1)
+            blockPars.topLeft * uvScale,
+            blockPars.topRight * uvScale,
+            blockPars.bottomLeft * uvScale,
+            blockPars.bottomRight * uvScale
         };
         mesh.uv = uv;
 

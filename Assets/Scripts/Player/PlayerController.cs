@@ -131,6 +131,9 @@ public class PlayerController : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.LeftShift) && isGrounded)
             isSprinting = true;
 
+        if(Input.GetKeyDown(KeyCode.Z))
+            rb.AddForce(Vector3.up * jumpForce * 1000);
+
         isSprinting = isSprinting && isWalking;
 
         if(isJumping)

@@ -2,18 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static LondonSettings;
 
 public class LondonGenerator : MonoBehaviour
 {
-    [System.NonSerialized]
-    public int renderDistance = 4;
-    [System.NonSerialized]
-    public float blockSize =200f;
-    [System.NonSerialized]
-    public float roadSize = 25f;
-    [System.NonSerialized]
-    public float blockSizeVariation = 200f / 4;
-    public float roadSizeVariation = 15f;
 
     [System.NonSerialized]
     public Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();

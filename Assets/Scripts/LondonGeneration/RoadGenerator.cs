@@ -3,24 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Util;
+using static LondonSettings;
 
 public class RoadGenerator : MonoBehaviour
 {
     Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();
-    int renderDistance;
-    float blockSize;
-    float roadSize;
-    float blockSizeVariation;
-    float roadSizeVariation;
+
     // Start is called before the first frame update
     public void Init()
     {
         blockMap = GetComponent<LondonGenerator>().blockMap;
-        renderDistance = GetComponent<LondonGenerator>().renderDistance;
-        blockSize = GetComponent<LondonGenerator>().blockSize;
-        roadSize = GetComponent<LondonGenerator>().roadSize;
-        blockSizeVariation = GetComponent<LondonGenerator>().blockSizeVariation;
-        roadSizeVariation = GetComponent<LondonGenerator>().roadSizeVariation;
     }
 
     void RenderQuad(Vector2[] vertxs, Vector2 pos, string name)
