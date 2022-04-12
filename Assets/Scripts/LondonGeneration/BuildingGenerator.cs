@@ -22,7 +22,6 @@ public class Building
 
 public class BuildingGenerator : MonoBehaviour
 {
-    List<Vector3> gizmosPoints = new List<Vector3>();
     [System.NonSerialized]
     public float blockSize =200f;
 
@@ -43,7 +42,22 @@ public class BuildingGenerator : MonoBehaviour
 
     void GenerateBuilding(Block block, Vector2Int id, Building building)
     {
-        if(AngleFrom3Points(building.topLeftCorner, building.bottomLeftCorner, building.bottomRightCorner) > -1.5f)
+        if(Mathf.Abs(AngleFrom3Points(building.bottomLeftCorner, building.topLeftCorner, building.topRightCorner)) < Mathf.PI / 4 + 0.1f)
+            return;
+        if(Mathf.Abs(AngleFrom3Points(building.topLeftCorner, building.topRightCorner, building.bottomRightCorner)) < Mathf.PI / 4 + 0.1f)
+            return;
+        if(Mathf.Abs(AngleFrom3Points(building.topRightCorner, building.bottomRightCorner, building.bottomLeftCorner)) < Mathf.PI / 4 + 0.1f)
+            return;
+        if(Mathf.Abs(AngleFrom3Points(building.bottomRightCorner, building.bottomLeftCorner, building.topLeftCorner)) < Mathf.PI / 4 + 0.1f)
+            return;
+
+        if(!PointInQuad(building.topLeftCorner, block))
+            return;
+        if(!PointInQuad(building.topRightCorner, block))
+            return;
+        if(!PointInQuad(building.bottomLeftCorner, block))
+            return;
+        if(!PointInQuad(building.bottomRightCorner, block))
             return;
 
         building.floorNumber = Random.Range(2, maxFloors + 1);
@@ -491,12 +505,6 @@ public class BuildingGenerator : MonoBehaviour
             segmentLength - rowOffset - buildingScale > 0;
     }
 
-    void OnDrawGizmos()
-    {
-        foreach(Vector3 point in gizmosPoints)
-            Gizmos.DrawSphere(point, 1f);
-    }
-
     /*
         ground points structure:
         0 - topLeft
@@ -563,6 +571,8 @@ public class BuildingGenerator : MonoBehaviour
         meshFilter.mesh = mesh;
         mesh.RecalculateTangents();
         mesh.RecalculateNormals();
+        
+        meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
 
         wall.transform.position = new Vector3(pos.x, 0, pos.y);
         wall.name = name;
@@ -637,12 +647,6 @@ public class BuildingGenerator : MonoBehaviour
             //walls rendering
             GameObject walls = RenderWalls(groundPoints, center, building.floorNumber * floorHeight, buildingGO.name + "-walls", wallMaterials[Random.Range(0, wallMaterials.Length)]);
             walls.transform.SetParent(buildingGO.transform, true);
-
-            //render gizmos
-            gizmosPoints.Add(new Vector3(building.topLeftCorner.x, 0, building.topLeftCorner.y) + new Vector3(coords.x, 0, coords.y) * blockSize);
-            gizmosPoints.Add(new Vector3(building.topRightCorner.x, 0, building.topRightCorner.y) + new Vector3(coords.x, 0, coords.y) * blockSize);
-            gizmosPoints.Add(new Vector3(building.bottomLeftCorner.x, 0, building.bottomLeftCorner.y) + new Vector3(coords.x, 0, coords.y) * blockSize);
-            gizmosPoints.Add(new Vector3(building.bottomRightCorner.x, 0, building.bottomRightCorner.y) + new Vector3(coords.x, 0, coords.y) * blockSize);
         }
     }
 }
