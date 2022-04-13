@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static LondonSettings;
+using static GraphicsUtil;
 
 public class LondonGenerator : MonoBehaviour
 {
@@ -29,6 +30,17 @@ public class LondonGenerator : MonoBehaviour
         blockGenerator.LoadBlocks(bounds);
         roadGenerator.LoadRoads(bounds);
         loadedBounds = bounds;
+
+        RenderQuad
+        (
+            new Vector2[]{new Vector2(-1, 1), new Vector2(1, 1), new Vector2(-1, -1), new Vector2(1, -1)}, 
+            Vector2.zero,
+            2f, 
+            "cock", 
+            Resources.Load<Material>("Materials/Ground/Road"), 
+            0.15f,
+            new bool[]{true, true, true, true, true, false}
+        );
     }
     
     void Update()

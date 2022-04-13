@@ -15,7 +15,7 @@ public class RoadGenerator : MonoBehaviour
         blockMap = GetComponent<LondonGenerator>().blockMap;
     }
 
-    void RenderQuad(Vector2[] vertxs, Vector2 pos, string name)
+    GameObject RenderQuad(Vector2[] vertxs, Vector2 pos, string name)
     {
         GameObject road = new GameObject();
 
@@ -52,6 +52,8 @@ public class RoadGenerator : MonoBehaviour
         road.transform.position = new Vector3(pos.x, 0, pos.y);
         road.name = name;
         road.AddComponent<MeshCollider>();
+
+        return road;
     }
 
     Vector2[] CalculateUVs(Vector2[] vertices, Vector2 pos)
@@ -134,8 +136,60 @@ public class RoadGenerator : MonoBehaviour
         horizontalRoad[3] = blockMap[block].topRight + xy - horizontalCenter;
 
         //quads rendering
-        RenderQuad(verticalRoad, verticalCenter, VectToName(block) + "vertical");
-        RenderQuad(horizontalRoad, horizontalCenter, VectToName(block) + "horizontal");
+        GameObject verticalRoadGO = RenderQuad(verticalRoad, verticalCenter, VectToName(block) + "vertical");
+        GameObject horizontalRoadGO = RenderQuad(horizontalRoad, horizontalCenter, VectToName(block) + "horizontal");
+
+        //vertical sidewalk left
+        Vector2 lastPoint = Vector2.zero;
+        foreach(Vector2 sidewalkPoint in blockMap[block].rightSidewalkPoints)
+        {
+            if(lastPoint.Equals(Vector2.zero))
+                lastPoint = sidewalkPoint;
+            else
+            {
+                Line topLine = blockMap[block].rightEdge.PerpendicularAtPoint(lastPoint);
+                Line bottomLine = blockMap[block].rightEdge.PerpendicularAtPoint(sidewalkPoint);
+                if(sidewalkPoint.y < lastPoint.y)
+                {
+                    Vector2[] sidewalk = new Vector2[4];
+                    //sidewalk top left
+                    sidewalk[0] = lastPoint + xy - verticalCenter;
+                    //sidewalk top right
+                    sidewalk[1] = topLine.PointOnLine(lastPoint, topLine.PointFromX(lastPoint.x + 1), sidewalkSize) + xy - verticalCenter;
+                    //sidewalk bottom left
+                    sidewalk[2] = sidewalkPoint + xy - verticalCenter;
+                    //sidewalk bottom right
+                    sidewalk[3] = lastPoint + xy - verticalCenter;
+                }
+                lastPoint = Vector2.zero;
+            }
+        }
+        //vertical sidewalk right
+        foreach(Vector2 sidewalkPoint in blockMap[new Vector2Int(block.x + 1, block.y)].leftSidewalkPoints)
+        {
+            print(sidewalkPoint);
+            debugPoints.Add(sidewalkPoint + x1y);
+        }
+        //horizontal sidewalk bottom
+        foreach(Vector2 sidewalkPoint in blockMap[block].topSidewalkPoints)
+        {
+            print(sidewalkPoint);
+            debugPoints.Add(sidewalkPoint + xy);
+        }
+        //horizontal sidewalk top
+        foreach(Vector2 sidewalkPoint in blockMap[new Vector2Int(block.x, block.y + 1)].bottomSidewalkPoints)
+        {
+            print(sidewalkPoint);
+            debugPoints.Add(sidewalkPoint + xy1);
+        }
+    }
+
+    List<Vector2> debugPoints = new List<Vector2>();
+
+    void OnDrawGizmos()
+    {
+        foreach(Vector2 p in debugPoints)
+            Gizmos.DrawSphere(new Vector3(p.x, 0, p.y), 1f);
     }
     
     void RenderCenter(Vector2Int block)

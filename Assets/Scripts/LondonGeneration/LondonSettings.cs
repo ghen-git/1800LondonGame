@@ -17,4 +17,5 @@ public static class LondonSettings
     public static int maxBuildInset = 2;
     public static float secondaryRoadSize = 3f;
     public static float insetScale = 2f;
+    public static float sidewalkSize = 5f;
 }

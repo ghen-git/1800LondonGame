@@ -50,6 +50,46 @@ public class BuildingGenerator : MonoBehaviour
         if(!PointInQuad(building.bottomRightCorner, block))
             return;
 
+        //check for left edge sidewalks
+        if(block.leftEdge.ContainsPoint(building.bottomLeftCorner))
+            block.AddSidewalkPoint(building.bottomLeftCorner, block.leftSidewalkPoints);
+        if(block.leftEdge.ContainsPoint(building.topLeftCorner))
+            block.AddSidewalkPoint(building.topLeftCorner, block.leftSidewalkPoints);
+        if(block.leftEdge.ContainsPoint(building.topRightCorner))
+            block.AddSidewalkPoint(building.topRightCorner, block.leftSidewalkPoints);
+        if(block.leftEdge.ContainsPoint(building.bottomRightCorner))
+            block.AddSidewalkPoint(building.bottomRightCorner, block.leftSidewalkPoints);
+
+        //check for top edge sidewalks
+        if(block.topEdge.ContainsPoint(building.bottomLeftCorner))
+            block.AddSidewalkPoint(building.bottomLeftCorner, block.topSidewalkPoints);
+        if(block.topEdge.ContainsPoint(building.topLeftCorner))
+            block.AddSidewalkPoint(building.topLeftCorner, block.topSidewalkPoints);
+        if(block.topEdge.ContainsPoint(building.topRightCorner))
+            block.AddSidewalkPoint(building.topRightCorner, block.topSidewalkPoints);
+        if(block.topEdge.ContainsPoint(building.bottomRightCorner))
+            block.AddSidewalkPoint(building.bottomRightCorner, block.topSidewalkPoints);
+
+        //check for right edge sidewalks
+        if(block.rightEdge.ContainsPoint(building.bottomLeftCorner))
+            block.AddSidewalkPoint(building.bottomLeftCorner, block.rightSidewalkPoints);
+        if(block.rightEdge.ContainsPoint(building.topLeftCorner))
+            block.AddSidewalkPoint(building.topLeftCorner, block.rightSidewalkPoints);
+        if(block.rightEdge.ContainsPoint(building.topRightCorner))
+            block.AddSidewalkPoint(building.topRightCorner, block.rightSidewalkPoints);
+        if(block.rightEdge.ContainsPoint(building.bottomRightCorner))
+            block.AddSidewalkPoint(building.bottomRightCorner, block.rightSidewalkPoints);
+
+        //check for bottom edge sidewalks
+        if(block.bottomEdge.ContainsPoint(building.bottomLeftCorner))
+            block.AddSidewalkPoint(building.bottomLeftCorner, block.bottomSidewalkPoints);
+        if(block.bottomEdge.ContainsPoint(building.topLeftCorner))
+            block.AddSidewalkPoint(building.topLeftCorner, block.bottomSidewalkPoints);
+        if(block.bottomEdge.ContainsPoint(building.topRightCorner))
+            block.AddSidewalkPoint(building.topRightCorner, block.bottomSidewalkPoints);
+        if(block.bottomEdge.ContainsPoint(building.bottomRightCorner))
+            block.AddSidewalkPoint(building.bottomRightCorner, block.bottomSidewalkPoints);
+
         building.floorNumber = Random.Range(2, maxFloors + 1);
 
         buildings.Add(id, building);
@@ -224,7 +264,7 @@ public class BuildingGenerator : MonoBehaviour
                 float depth = GetDepth() * buildingScale;
                 if(depth > 1 * buildingScale)
                     width = 1 * buildingScale;
-                float inset = Random.Range(1, maxBuildInset + 1) * insetScale;
+                float inset = Random.Range(0, maxBuildInset + 1) * insetScale;
                 leftBuilding = GenerateBounds(block, width, depth, inset, segmentLength / 2 - width / 2, false, top, bottom, edge);
                 leftBDistance = segmentLength / 2 - width / 2;
                 
@@ -242,12 +282,12 @@ public class BuildingGenerator : MonoBehaviour
                 leftDepth = GetDepth() * buildingScale;
                 if(leftDepth > 1 * buildingScale)
                     leftWidth = 1 * buildingScale;
-                leftInset = Random.Range(1, maxBuildInset + 1) * insetScale;
+                leftInset = Random.Range(0, maxBuildInset + 1) * insetScale;
                 rightWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
                 rightDepth = GetDepth() * buildingScale;
                 if(rightDepth > 1 * buildingScale)
                     rightWidth = 1 * buildingScale;
-                rightInset = Random.Range(1, maxBuildInset + 1) * insetScale;
+                rightInset = Random.Range(0, maxBuildInset + 1) * insetScale;
 
                 float startDistance = segmentLength / 2 - secondaryRoadSize / 2;
                 leftBuilding = GenerateBounds(block, leftWidth, leftDepth, leftInset, startDistance - leftWidth, false, top, bottom, edge);
@@ -277,7 +317,7 @@ public class BuildingGenerator : MonoBehaviour
                     leftDepth = GetDepth() * buildingScale;
                     if(leftDepth > 1 * buildingScale)
                         leftWidth = 1 * buildingScale;
-                    leftInset = Random.Range(1, maxBuildInset + 1) * insetScale;
+                    leftInset = Random.Range(0, maxBuildInset + 1) * insetScale;
 
                     leftBDistance = leftBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - leftWidth;
 
@@ -295,7 +335,7 @@ public class BuildingGenerator : MonoBehaviour
                     rightDepth = GetDepth() * buildingScale;
                     if(rightDepth > 1 * buildingScale)
                         rightWidth = 1 * buildingScale;
-                    rightInset = Random.Range(1, maxBuildInset + 1) * insetScale;
+                    rightInset = Random.Range(0, maxBuildInset + 1) * insetScale;
 
                     rightBDistance = rightBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - rightWidth;
 
@@ -313,11 +353,11 @@ public class BuildingGenerator : MonoBehaviour
             leftDepth = GetDepth() * buildingScale;
             if(leftDepth > 1 * buildingScale)
                 leftWidth = 1 * buildingScale;
-            leftInset = Random.Range(1, maxBuildInset + 1) * insetScale;
+            leftInset = Random.Range(0, maxBuildInset + 1) * insetScale;
             rightDepth = GetDepth() * buildingScale;
             if(rightDepth > 1 * buildingScale)
                 rightWidth = 1 * buildingScale;
-            rightInset = Random.Range(1, maxBuildInset + 1) * insetScale;
+            rightInset = Random.Range(0, maxBuildInset + 1) * insetScale;
 
             leftBDistance = leftBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0);
             rightBDistance = rightBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0);

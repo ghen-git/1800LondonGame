@@ -32,6 +32,11 @@ public class Line
         return new Vector2((y - q) / m, y);
     }
 
+    public bool ContainsPoint(Vector2 p)
+    {
+        return PointFromX(p.x).y == p.y;
+    }
+
     public static Vector2 MidPoint(Vector2 a, Vector2 b)
     {
         return new Vector2
@@ -120,6 +125,10 @@ public class Block
     public Line topEdge;
     public Line rightEdge;
     public Line bottomEdge;
+    public List<Vector2> leftSidewalkPoints;
+    public List<Vector2> topSidewalkPoints;
+    public List<Vector2> rightSidewalkPoints;
+    public List<Vector2> bottomSidewalkPoints;
 
     public Dictionary<Vector2Int, Building> buildings;
 
@@ -137,6 +146,21 @@ public class Block
         topEdge = new Line(topLeft, topRight);
         rightEdge = new Line(topRight, bottomRight);
         bottomEdge = new Line(bottomRight, bottomLeft);
+
+        leftSidewalkPoints = new List<Vector2>();
+        topSidewalkPoints = new List<Vector2>();
+        rightSidewalkPoints = new List<Vector2>();
+        bottomSidewalkPoints = new List<Vector2>();
+    }
+
+    public void AddSidewalkPoint(Vector2 point, List<Vector2> edge)
+    {
+        Vector2 oldPoint = edge.Find( p => p.x == point.x && p.y == point.y);
+        
+        if(!oldPoint.Equals(new Vector2()))
+            edge.Remove(oldPoint);
+        else
+            edge.Add(point);
     }
 }
 
