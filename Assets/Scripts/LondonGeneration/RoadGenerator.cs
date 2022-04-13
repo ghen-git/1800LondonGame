@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Util;
+using static GraphicsUtil;
 using static LondonSettings;
 
 public class RoadGenerator : MonoBehaviour
@@ -15,85 +16,17 @@ public class RoadGenerator : MonoBehaviour
         blockMap = GetComponent<LondonGenerator>().blockMap;
     }
 
-    GameObject RenderQuad(Vector2[] vertxs, Vector2 pos, string name)
-    {
-        GameObject road = new GameObject();
-
-        MeshRenderer meshRenderer = road.AddComponent<MeshRenderer>();
-
-        meshRenderer.material = Resources.Load<Material>("Materials/Ground/Road");
-
-        MeshFilter meshFilter = road.AddComponent<MeshFilter>();
-
-        Mesh mesh = new Mesh();
-
-        Vector3[] vertices = new Vector3[]
-        {
-            new Vector3(vertxs[0].x, 0, vertxs[0].y), //top left 0
-            new Vector3(vertxs[1].x, 0, vertxs[1].y), //top right 1 
-            new Vector3(vertxs[2].x, 0, vertxs[2].y), //bottom left 2 
-            new Vector3(vertxs[3].x, 0, vertxs[3].y)  //bottom right 3
-        };
-        mesh.vertices = vertices;
-
-        int[] tris = new int[]
-        {
-            2, 0, 3,
-            3, 0, 1
-        };
-        mesh.triangles = tris;
-        
-        mesh.uv = CalculateUVs(vertxs, pos);
-
-        meshFilter.mesh = mesh;
-        mesh.RecalculateTangents();
-        mesh.RecalculateNormals();
-
-        road.transform.position = new Vector3(pos.x, 0, pos.y);
-        road.name = name;
-        road.AddComponent<MeshCollider>();
-
-        return road;
-    }
-
-    Vector2[] CalculateUVs(Vector2[] vertices, Vector2 pos)
-    {
-        Vector2[] worldVertices = new Vector2[4]
-        {
-            vertices[0] + pos,
-            vertices[1] + pos,
-            vertices[2] + pos,
-            vertices[3] + pos
-        };
-        Vector2[] uvs = new Vector2[4];
-
-        float width = Vector2.Distance(vertices[0], vertices[1]);
-        float height = Vector2.Distance(vertices[0], vertices[2]);
-
-        float scale = 0.15f;
-        
-        if(width > height)
-        {
-            uvs[0] = new Vector2(-width / 2, -height / 2) * scale;
-            uvs[1] = new Vector2(width / 2, -height / 2) * scale;
-            uvs[2] = new Vector2(-width / 2, height / 2) * scale;
-            uvs[3] = new Vector2(width / 2, height / 2) * scale;
-        }
-        else
-        {
-            uvs[0] = new Vector2(-width / 2, -height / 2) * scale;
-            uvs[1] = new Vector2(width / 2, -height / 2) * scale;
-            uvs[2] = new Vector2(-width / 2, height / 2) * scale;
-            uvs[3] = new Vector2(width / 2, height / 2) * scale;
-        }
-
-        return uvs;
-    }
-
     void RenderRoad(Vector2Int block)
     {
         Vector2[] verticalRoad = new Vector2[4];
         Vector2[] horizontalRoad = new Vector2[4];
+
+        string verticalType = 
+            blockMap[block].end == "west" && blockMap[new Vector2Int(block.x + 1, block.y)].end == "west" ? "west" :
+            blockMap[block].end == "east" && blockMap[new Vector2Int(block.x + 1, block.y)].end == "east" ? "east" : "west";
+        string horizontalType = 
+            blockMap[block].end == "west" && blockMap[new Vector2Int(block.x, block.y + 1)].end == "west" ? "west" :
+            blockMap[block].end == "east" && blockMap[new Vector2Int(block.x, block.y + 1)].end == "east" ? "east" : "west";
         
         //frequently used formulas calculation for performance
         Vector2 xy = new Vector2(block.x, block.y) * blockSize;
@@ -136,11 +69,23 @@ public class RoadGenerator : MonoBehaviour
         horizontalRoad[3] = blockMap[block].topRight + xy - horizontalCenter;
 
         //quads rendering
-        GameObject verticalRoadGO = RenderQuad(verticalRoad, verticalCenter, VectToName(block) + "vertical");
-        GameObject horizontalRoadGO = RenderQuad(horizontalRoad, horizontalCenter, VectToName(block) + "horizontal");
+        GameObject verticalRoadGO = RenderQuad
+        (
+            verticalRoad, verticalCenter,  VectToName(block) + "vertical",
+            Resources.Load<Material>($"Materials/{ (verticalType == "west" ? westEndRoadMat : eastEndRoadMat) }"), 
+            verticalType == "west" ? 0.15f : 0.3f
+        );
+        GameObject horizontalRoadGO = RenderQuad
+        (
+            horizontalRoad, horizontalCenter,  VectToName(block) + "horizontal", 
+            Resources.Load<Material>($"Materials/{ (horizontalType == "west" ? westEndRoadMat : eastEndRoadMat) }"),
+            horizontalType == "west" ? 0.15f : 0.3f
+        );
+
+        Vector2 lastPoint;
 
         //vertical sidewalk left
-        Vector2 lastPoint = Vector2.zero;
+        lastPoint = Vector2.zero;
         foreach(Vector2 sidewalkPoint in blockMap[block].rightSidewalkPoints)
         {
             if(lastPoint.Equals(Vector2.zero))
@@ -149,37 +94,46 @@ public class RoadGenerator : MonoBehaviour
             {
                 Line topLine = blockMap[block].rightEdge.PerpendicularAtPoint(lastPoint);
                 Line bottomLine = blockMap[block].rightEdge.PerpendicularAtPoint(sidewalkPoint);
+                Vector2[] sidewalk = new Vector2[4];
+                
+                Vector2 top, bottom;
+
                 if(sidewalkPoint.y < lastPoint.y)
                 {
-                    Vector2[] sidewalk = new Vector2[4];
-                    //sidewalk top left
-                    sidewalk[0] = lastPoint + xy - verticalCenter;
-                    //sidewalk top right
-                    sidewalk[1] = topLine.PointOnLine(lastPoint, topLine.PointFromX(lastPoint.x + 1), sidewalkSize) + xy - verticalCenter;
-                    //sidewalk bottom left
-                    sidewalk[2] = sidewalkPoint + xy - verticalCenter;
-                    //sidewalk bottom right
-                    sidewalk[3] = lastPoint + xy - verticalCenter;
+                    top = lastPoint;
+                    bottom = sidewalkPoint;
                 }
+                else
+                {
+                    top = sidewalkPoint;
+                    bottom = lastPoint;
+                }
+
+                //sidewalk top left
+                sidewalk[0] = top + xy - verticalCenter;
+                //sidewalk top right
+                sidewalk[1] = topLine.PointOnLine(top, topLine.PointFromX(top.x + 1), sidewalkSize) + xy - verticalCenter;
+                //sidewalk bottom left
+                sidewalk[2] = bottom + xy - verticalCenter;
+                //sidewalk bottom right
+                sidewalk[3] = bottomLine.PointOnLine(bottom, bottomLine.PointFromX(bottom.x + 1), sidewalkSize) + xy - verticalCenter;
+
+                Vector2 sidewalkCenter = GetGlobalCenter(sidewalk, verticalCenter);
+
+                GameObject sidewalkGO = RenderQuad(GetRelativeVertices(sidewalk, verticalCenter, sidewalkCenter), sidewalkCenter, sidewalkHeight, "", Resources.Load<Material>($"Materials/{ westEndRoadMat }"), 0.15f);
+                sidewalkGO.transform.SetParent(verticalRoadGO.transform, true);
+
                 lastPoint = Vector2.zero;
             }
-        }
-        //vertical sidewalk right
-        foreach(Vector2 sidewalkPoint in blockMap[new Vector2Int(block.x + 1, block.y)].leftSidewalkPoints)
-        {
-            print(sidewalkPoint);
-            debugPoints.Add(sidewalkPoint + x1y);
         }
         //horizontal sidewalk bottom
         foreach(Vector2 sidewalkPoint in blockMap[block].topSidewalkPoints)
         {
-            print(sidewalkPoint);
             debugPoints.Add(sidewalkPoint + xy);
         }
         //horizontal sidewalk top
         foreach(Vector2 sidewalkPoint in blockMap[new Vector2Int(block.x, block.y + 1)].bottomSidewalkPoints)
         {
-            print(sidewalkPoint);
             debugPoints.Add(sidewalkPoint + xy1);
         }
     }
@@ -220,8 +174,19 @@ public class RoadGenerator : MonoBehaviour
         //center road bottom right
         centerRoad[3] = blockMap[new Vector2Int(block.x + 1, block.y)].topLeft + x1y - centerPos;
 
-        //quads rendering
-        RenderQuad(centerRoad, centerPos, VectToName(block) + "center");
+        string centerType = 
+        blockMap[block].end == "east" &&
+        blockMap[new Vector2Int(block.x + 1, block.y)].end == "east" &&
+        blockMap[new Vector2Int(block.x, block.y + 1)].end == "east" &&
+        blockMap[new Vector2Int(block.x + 1, block.y + 1)].end == "east" ?
+        "east" : "west";
+
+        RenderQuad
+        (
+            centerRoad, centerPos,  VectToName(block) + "center", 
+            Resources.Load<Material>($"Materials/{ (centerType == "west" ? westEndRoadMat : eastEndRoadMat) }"),
+            centerType == "west" ? 0.15f : 0.3f
+        );
     }
 
     public void LoadRoads(Vector2Int[] bounds)

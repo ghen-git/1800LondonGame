@@ -121,6 +121,7 @@ public class Block
     public bool direction;
     //false: horizontal
     //true: vertical
+    public string end;
     public Line leftEdge;
     public Line topEdge;
     public Line rightEdge;
@@ -179,7 +180,7 @@ public class BlockGenerator : MonoBehaviour
     void LoadBlock(Vector2Int coords)
     {
         Block block = blockMap[coords];
-        RenderBlock(coords);
+        RenderBase(coords);
         buildingGenerator.RenderBuildings(block, coords);
     }
 
@@ -206,12 +207,19 @@ public class BlockGenerator : MonoBehaviour
         
         block.direction = RandomChance(50, 100);
 
+        //smoothly transitions between west and east end "areas" with perlin noise
+        float perlinX = perlinOffset.x + (float)(startCoords.x + 10000) / 100 * perlinFrequency;
+        float perlinY = perlinOffset.y + (float)(startCoords.y + 10000) / 100 * perlinFrequency;
+        block.end = Mathf.PerlinNoise(perlinX, perlinY) > 0.5f ? "east" : "west";
+
         block.buildings = buildingGenerator.GenerateBuildings(block);
 
         blockMap.Add(startCoords, block);
     }
 
-    void RenderBlock(Vector2Int coords)
+    //special quad rendering function that doesnt stretch the block's uv
+    //in a specific direction, thus can't use the one in GraphicsUtil
+    void RenderBase(Vector2Int coords)
     {
         Block blockPars = blockMap[coords];
         GameObject block = new GameObject();
@@ -263,6 +271,8 @@ public class BlockGenerator : MonoBehaviour
         blockPars.block = block;
     }
 
+    //calculates bounds for each block, and does some complex math to
+    //snap a new block to the nearest one, if already generated
     Block GenerateBounds(Vector2Int coords)
     {
         Vector2 topLeft, topRight, bottomLeft, bottomRight;
@@ -350,14 +360,12 @@ public class BlockGenerator : MonoBehaviour
         return new Block(topLeft, topRight, bottomLeft, bottomRight);
     }
 
+    /*
+    Temporairly deprecated function that insets each edge of a block by a specified amount
+    doesnt work with road centers needing to be the same size
+
     Vector2 RoadSpace(Vector2 left, Vector2 center, Vector2 right, Vector2Int startCoords)
     {
-
-        /*
-        
-
-        */
-
         float mainAngle = Util.AngleFrom3Points(left, center, right) / 2;
         float angleToXAxis = Util.AngleFrom3Points(right, center, new Vector2(center.x + 1f, center.y));
 
@@ -366,6 +374,7 @@ public class BlockGenerator : MonoBehaviour
 
         return new Vector2();
     }
+    */
 
     public void LoadBlocks(Vector2Int[] bounds, Vector2Int[] loadedBounds)
     {

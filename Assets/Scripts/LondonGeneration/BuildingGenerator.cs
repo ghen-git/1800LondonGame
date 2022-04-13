@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Util;
+using static GraphicsUtil;
 using static LondonSettings;
 
 public class Building
@@ -11,6 +12,20 @@ public class Building
     public Vector2 bottomLeftCorner;
     public Vector2 bottomRightCorner;
     public int floorNumber;
+
+    public Vector2[] vertices
+    {
+        get
+        {
+            return new Vector2[4]
+            {
+                topLeftCorner,
+                topRightCorner,
+                bottomLeftCorner,
+                bottomRightCorner
+            };
+        }
+    }
 
     public Building(Vector2 topLeftCorner, Vector2 topRightCorner, Vector2 bottomLeftCorner, Vector2 bottomRightCorner)
     {
@@ -23,15 +38,11 @@ public class Building
 
 public class BuildingGenerator : MonoBehaviour
 {
-    string[] wallMaterials = new string[]
-    {
-        "BrownBricks", "WornRedBricks", "BeigeBricks", "BlackBricks"
-    };
-
     Dictionary<Vector2Int, Building> buildings;
 
     void GenerateBuilding(Block block, Vector2Int id, Building building)
     {
+        //kills weird looking ninja star buildings
         if(Mathf.Abs(AngleFrom3Points(building.bottomLeftCorner, building.topLeftCorner, building.topRightCorner)) < Mathf.PI / 4 + 0.1f)
             return;
         if(Mathf.Abs(AngleFrom3Points(building.topLeftCorner, building.topRightCorner, building.bottomRightCorner)) < Mathf.PI / 4 + 0.1f)
@@ -41,6 +52,7 @@ public class BuildingGenerator : MonoBehaviour
         if(Mathf.Abs(AngleFrom3Points(building.bottomRightCorner, building.bottomLeftCorner, building.topLeftCorner)) < Mathf.PI / 4 + 0.1f)
             return;
 
+        //kills buildings that exit from the block borders
         if(!PointInQuad(building.topLeftCorner, block))
             return;
         if(!PointInQuad(building.topRightCorner, block))
@@ -50,7 +62,7 @@ public class BuildingGenerator : MonoBehaviour
         if(!PointInQuad(building.bottomRightCorner, block))
             return;
 
-        //check for left edge sidewalks
+        //adds left edge sidewalks
         if(block.leftEdge.ContainsPoint(building.bottomLeftCorner))
             block.AddSidewalkPoint(building.bottomLeftCorner, block.leftSidewalkPoints);
         if(block.leftEdge.ContainsPoint(building.topLeftCorner))
@@ -60,7 +72,7 @@ public class BuildingGenerator : MonoBehaviour
         if(block.leftEdge.ContainsPoint(building.bottomRightCorner))
             block.AddSidewalkPoint(building.bottomRightCorner, block.leftSidewalkPoints);
 
-        //check for top edge sidewalks
+        //adds top edge sidewalks
         if(block.topEdge.ContainsPoint(building.bottomLeftCorner))
             block.AddSidewalkPoint(building.bottomLeftCorner, block.topSidewalkPoints);
         if(block.topEdge.ContainsPoint(building.topLeftCorner))
@@ -70,7 +82,7 @@ public class BuildingGenerator : MonoBehaviour
         if(block.topEdge.ContainsPoint(building.bottomRightCorner))
             block.AddSidewalkPoint(building.bottomRightCorner, block.topSidewalkPoints);
 
-        //check for right edge sidewalks
+        //adds right edge sidewalks
         if(block.rightEdge.ContainsPoint(building.bottomLeftCorner))
             block.AddSidewalkPoint(building.bottomLeftCorner, block.rightSidewalkPoints);
         if(block.rightEdge.ContainsPoint(building.topLeftCorner))
@@ -80,7 +92,7 @@ public class BuildingGenerator : MonoBehaviour
         if(block.rightEdge.ContainsPoint(building.bottomRightCorner))
             block.AddSidewalkPoint(building.bottomRightCorner, block.rightSidewalkPoints);
 
-        //check for bottom edge sidewalks
+        //adds bottom edge sidewalks
         if(block.bottomEdge.ContainsPoint(building.bottomLeftCorner))
             block.AddSidewalkPoint(building.bottomLeftCorner, block.bottomSidewalkPoints);
         if(block.bottomEdge.ContainsPoint(building.topLeftCorner))
@@ -90,7 +102,7 @@ public class BuildingGenerator : MonoBehaviour
         if(block.bottomEdge.ContainsPoint(building.bottomRightCorner))
             block.AddSidewalkPoint(building.bottomRightCorner, block.bottomSidewalkPoints);
 
-        building.floorNumber = Random.Range(2, maxFloors + 1);
+        building.floorNumber = Random.Range(minFloors, maxFloors + 1);
 
         buildings.Add(id, building);
     }
@@ -209,6 +221,8 @@ public class BuildingGenerator : MonoBehaviour
         return new Building(topLeftBound, topRightBound, bottomLeftBound, bottomRightBound);
     }
     
+    //i swear this code was very hard to write and looks like spaghetti
+    //go easy on me
     public Dictionary<Vector2Int, Building> GenerateBuildings(Block block)
     {
         buildings = new Dictionary<Vector2Int, Building>();
@@ -238,7 +252,7 @@ public class BuildingGenerator : MonoBehaviour
         do
         {
             //variable resetting
-            startWithHouse = RandomChance(50, 100);
+            startWithHouse = RandomChance(startWithHouseChance, 100);
             maxRowDepth = 0;
             buildStep = 0;
         
@@ -260,11 +274,11 @@ public class BuildingGenerator : MonoBehaviour
             //first building
             if(startWithHouse)
             {
-                float width = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                float width = Random.Range(minBuildWidth, maxBuildWidth + 1) * buildingScale;
                 float depth = GetDepth() * buildingScale;
                 if(depth > 1 * buildingScale)
                     width = 1 * buildingScale;
-                float inset = Random.Range(0, maxBuildInset + 1) * insetScale;
+                float inset = Random.Range(minBuildInset, maxBuildInset + 1) * insetScale;
                 leftBuilding = GenerateBounds(block, width, depth, inset, segmentLength / 2 - width / 2, false, top, bottom, edge);
                 leftBDistance = segmentLength / 2 - width / 2;
                 
@@ -278,16 +292,16 @@ public class BuildingGenerator : MonoBehaviour
             }
             else
             {
-                leftWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                leftWidth = Random.Range(minBuildWidth, maxBuildWidth + 1) * buildingScale;
                 leftDepth = GetDepth() * buildingScale;
                 if(leftDepth > 1 * buildingScale)
                     leftWidth = 1 * buildingScale;
-                leftInset = Random.Range(0, maxBuildInset + 1) * insetScale;
-                rightWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                leftInset = Random.Range(minBuildInset, maxBuildInset + 1) * insetScale;
+                rightWidth = Random.Range(minBuildWidth, maxBuildWidth + 1) * buildingScale;
                 rightDepth = GetDepth() * buildingScale;
                 if(rightDepth > 1 * buildingScale)
                     rightWidth = 1 * buildingScale;
-                rightInset = Random.Range(0, maxBuildInset + 1) * insetScale;
+                rightInset = Random.Range(minBuildInset, maxBuildInset + 1) * insetScale;
 
                 float startDistance = segmentLength / 2 - secondaryRoadSize / 2;
                 leftBuilding = GenerateBounds(block, leftWidth, leftDepth, leftInset, startDistance - leftWidth, false, top, bottom, edge);
@@ -313,13 +327,13 @@ public class BuildingGenerator : MonoBehaviour
                 //with a corner building    
                 if(leftBDistance - secondaryRoadSize - maxBuildWidth * buildingScale > 0)
                 {
-                    leftWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                    leftWidth = Random.Range(minBuildWidth, maxBuildWidth + 1) * buildingScale;
                     leftDepth = GetDepth() * buildingScale;
                     if(leftDepth > 1 * buildingScale)
                         leftWidth = 1 * buildingScale;
                     leftInset = Random.Range(0, maxBuildInset + 1) * insetScale;
 
-                    leftBDistance = leftBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - leftWidth;
+                    leftBDistance = leftBDistance - (RandomChance(secondaryRoadChance, 100) ? secondaryRoadSize : 0) - leftWidth;
 
                     leftBuilding = GenerateBounds(block, leftWidth, leftDepth, leftInset, leftBDistance, false, top, bottom, edge);
                     
@@ -331,13 +345,13 @@ public class BuildingGenerator : MonoBehaviour
 
                 if(rightBDistance - secondaryRoadSize - maxBuildWidth * buildingScale > 0)
                 {
-                    rightWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                    rightWidth = Random.Range(minBuildWidth, maxBuildWidth + 1) * buildingScale;
                     rightDepth = GetDepth() * buildingScale;
                     if(rightDepth > 1 * buildingScale)
                         rightWidth = 1 * buildingScale;
                     rightInset = Random.Range(0, maxBuildInset + 1) * insetScale;
 
-                    rightBDistance = rightBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - rightWidth;
+                    rightBDistance = rightBDistance - (RandomChance(secondaryRoadChance, 100) ? secondaryRoadSize : 0) - rightWidth;
 
                     rightBuilding = GenerateBounds(block, rightWidth, rightDepth, rightInset, rightBDistance, true, top, bottom, edge);
 
@@ -359,8 +373,8 @@ public class BuildingGenerator : MonoBehaviour
                 rightWidth = 1 * buildingScale;
             rightInset = Random.Range(0, maxBuildInset + 1) * insetScale;
 
-            leftBDistance = leftBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0);
-            rightBDistance = rightBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0);
+            leftBDistance = leftBDistance - (RandomChance(secondaryRoadChance, 100) ? secondaryRoadSize : 0);
+            rightBDistance = rightBDistance - (RandomChance(secondaryRoadChance, 100) ? secondaryRoadSize : 0);
 
             leftBuilding = GenerateBounds(block, leftDepth, leftInset, false, leftBDistance, top, bottom, edge);
             rightBuilding = GenerateBounds(block, rightDepth, rightInset, true, rightBDistance, top, bottom, edge); 
@@ -385,7 +399,7 @@ public class BuildingGenerator : MonoBehaviour
         if(canFitLastRow(block, rowOffset))
         {
             //variable resetting
-            startWithHouse = RandomChance(50, 100);
+            startWithHouse = RandomChance(startWithHouseChance, 100);
             buildStep = 0;
         
             //row offset alignment calculation
@@ -406,7 +420,7 @@ public class BuildingGenerator : MonoBehaviour
             //first building
             if(startWithHouse)
             {
-                float width = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                float width = Random.Range(minBuildWidth, maxBuildWidth + 1) * buildingScale;
 
                 leftBuilding = GenerateBounds(block, width, buildingScale, 0, segmentLength / 2 - width / 2, false, top, bottom, edge);
                 leftBDistance = segmentLength / 2 - width / 2;
@@ -418,8 +432,8 @@ public class BuildingGenerator : MonoBehaviour
             }
             else
             {
-                leftWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
-                rightWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                leftWidth = Random.Range(minBuildWidth, maxBuildWidth + 1) * buildingScale;
+                rightWidth = Random.Range(minBuildWidth, maxBuildWidth + 1) * buildingScale;
 
                 float startDistance = segmentLength / 2 - secondaryRoadSize / 2;
                 leftBuilding = GenerateBounds(block, leftWidth, buildingScale, 0, startDistance - leftWidth, false, top, bottom, edge);
@@ -440,9 +454,9 @@ public class BuildingGenerator : MonoBehaviour
                 //with a corner building    
                 if(leftBDistance - secondaryRoadSize - maxBuildWidth * buildingScale > 0)
                 {
-                    leftWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                    leftWidth = Random.Range(minBuildWidth, maxBuildWidth + 1) * buildingScale;
 
-                    leftBDistance = leftBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - leftWidth;
+                    leftBDistance = leftBDistance - (RandomChance(secondaryRoadChance, 100) ? secondaryRoadSize : 0) - leftWidth;
 
                     leftBuilding = GenerateBounds(block, leftWidth, buildingScale, 0, leftBDistance, false, top, bottom, edge);
                     
@@ -451,9 +465,9 @@ public class BuildingGenerator : MonoBehaviour
 
                 if(rightBDistance - secondaryRoadSize - maxBuildWidth * buildingScale > 0)
                 {
-                    rightWidth = Random.Range(1, maxBuildWidth + 1) * buildingScale;
+                    rightWidth = Random.Range(minBuildWidth, maxBuildWidth + 1) * buildingScale;
 
-                    rightBDistance = rightBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0) - rightWidth;
+                    rightBDistance = rightBDistance - (RandomChance(secondaryRoadChance, 100) ? secondaryRoadSize : 0) - rightWidth;
 
                     rightBuilding = GenerateBounds(block, rightWidth, buildingScale, 0, rightBDistance, true, top, bottom, edge);
 
@@ -463,8 +477,8 @@ public class BuildingGenerator : MonoBehaviour
             }
             while(canFitMoreBuildings(block, leftBDistance, rightBDistance));
 
-            leftBDistance = leftBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0);
-            rightBDistance = rightBDistance - (RandomChance(50, 100) ? secondaryRoadSize : 0);
+            leftBDistance = leftBDistance - (RandomChance(secondaryRoadChance, 100) ? secondaryRoadSize : 0);
+            rightBDistance = rightBDistance - (RandomChance(secondaryRoadChance, 100) ? secondaryRoadSize : 0);
 
             leftBuilding = GenerateBounds(block, buildingScale, 0, false, leftBDistance, top, bottom, edge);
             rightBuilding = GenerateBounds(block, buildingScale, 0, true, rightBDistance, top, bottom, edge); 
@@ -479,9 +493,9 @@ public class BuildingGenerator : MonoBehaviour
         return buildings;
     }
 
-    int GetDepth(int depth = 1)
+    int GetDepth(int depth = minBuildDepth)
     {
-        if(RandomChance(10, 100) && depth < maxBuildDepth)
+        if(RandomChance(depthIncreaseChance, 100) && depth < maxBuildDepth)
             depth = GetDepth(depth + 1);
         return depth;
     }
@@ -535,117 +549,6 @@ public class BuildingGenerator : MonoBehaviour
             segmentLength - rowOffset - buildingScale > 0;
     }
 
-    /*
-        ground points structure:
-        0 - topLeft
-        1 - topRight
-        2 - bottomLeft
-        3 - bottomRight
-    */
-    GameObject RenderWalls(Vector2[] groundPoints, Vector2 pos, float height, bool vertical, string name, string textureName)
-    {
-        
-        GameObject wall = new GameObject();
-
-        MeshRenderer meshRenderer = wall.AddComponent<MeshRenderer>();
-
-        meshRenderer.material = Resources.Load<Material>($"Materials/Walls/{textureName}");
-
-        MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
-
-        Mesh mesh = new Mesh();
-
-        Vector3[] vertices = new Vector3[]
-        {
-            //left wall
-            new Vector3(groundPoints[0].x, height, groundPoints[0].y), //top left 0
-            new Vector3(groundPoints[2].x, height, groundPoints[2].y), //top right 1 
-            new Vector3(groundPoints[0].x, 0, groundPoints[0].y), //bottom left 2 
-            new Vector3(groundPoints[2].x, 0, groundPoints[2].y),  //bottom right 3
-
-            //top wall
-            new Vector3(groundPoints[1].x, height, groundPoints[1].y), //top left 4
-            new Vector3(groundPoints[0].x, height, groundPoints[0].y), //top right 5 
-            new Vector3(groundPoints[1].x, 0, groundPoints[1].y), //bottom left 6 
-            new Vector3(groundPoints[0].x, 0, groundPoints[0].y),  //bottom right 7
-
-            //right wall
-            new Vector3(groundPoints[3].x, height, groundPoints[3].y), //top left 8
-            new Vector3(groundPoints[1].x, height, groundPoints[1].y), //top right 9 
-            new Vector3(groundPoints[3].x, 0, groundPoints[3].y), //bottom left 10 
-            new Vector3(groundPoints[1].x, 0, groundPoints[1].y),  //bottom right 11
-
-            //bottom wall
-            new Vector3(groundPoints[2].x, height, groundPoints[2].y), //top left 12
-            new Vector3(groundPoints[3].x, height, groundPoints[3].y), //top right 13 
-            new Vector3(groundPoints[2].x, 0, groundPoints[2].y), //bottom left 14 
-            new Vector3(groundPoints[3].x, 0, groundPoints[3].y),  //bottom right 15
-        };
-        
-        mesh.vertices = vertices;
-
-        int[] tris = new int[]
-        {
-            2, 0, 3,
-            3, 0, 1,
-            6, 4, 7,
-            7, 4, 5,
-            10, 8, 11,
-            11, 8, 9,
-            14, 12, 15,
-            15, 12, 13
-        };
-        mesh.triangles = tris;
-        
-        mesh.uv = CalculateUVs(groundPoints, height);
-
-        meshFilter.mesh = mesh;
-        mesh.RecalculateTangents();
-        mesh.RecalculateNormals();
-        
-        meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
-
-        wall.transform.position = new Vector3(pos.x, 0, pos.y);
-        wall.name = name;
-        wall.AddComponent<MeshCollider>();
-
-        return wall;
-    }
-    
-    Vector2[] CalculateUVs(Vector2[] vertices, float height)
-    {
-        Vector2[] uvs = new Vector2[16];
-
-        float leftWidth = Vector2.Distance(vertices[2], vertices[0]);
-        float topWidth = Vector2.Distance(vertices[0], vertices[1]);
-        float rightWidth = Vector2.Distance(vertices[1], vertices[3]);
-        float bottomWidth = Vector2.Distance(vertices[3], vertices[2]);
-
-        float scale = 0.15f;
-        
-        uvs[0] = new Vector2(-leftWidth / 2, height / 2) * scale;
-        uvs[1] = new Vector2(leftWidth / 2, height / 2) * scale;
-        uvs[2] = new Vector2(-leftWidth / 2, -height / 2) * scale;
-        uvs[3] = new Vector2(leftWidth / 2, -height / 2) * scale;
-        
-        uvs[4] = new Vector2(-topWidth / 2, height / 2) * scale;
-        uvs[5] = new Vector2(topWidth / 2, height / 2) * scale;
-        uvs[6] = new Vector2(-topWidth / 2, -height / 2) * scale;
-        uvs[7] = new Vector2(topWidth / 2, -height / 2) * scale;
-        
-        uvs[8] = new Vector2(-rightWidth / 2, height / 2) * scale;
-        uvs[9] = new Vector2(rightWidth / 2, height / 2) * scale;
-        uvs[10] = new Vector2(-rightWidth / 2, -height / 2) * scale;
-        uvs[11] = new Vector2(rightWidth / 2, -height / 2) * scale;
-        
-        uvs[12] = new Vector2(-bottomWidth / 2, height / 2) * scale;
-        uvs[13] = new Vector2(bottomWidth / 2, height / 2) * scale;
-        uvs[14] = new Vector2(-bottomWidth / 2, -height / 2) * scale;
-        uvs[15] = new Vector2(bottomWidth / 2, -height / 2) * scale;
-
-        return uvs;
-    }
-
     public void RenderBuildings(Block block, Vector2Int coords)
     {
         foreach(Vector2Int buildingCoords in block.buildings.Keys)
@@ -654,29 +557,29 @@ public class BuildingGenerator : MonoBehaviour
             Vector2 xy = new Vector2(coords.x, coords.y) * blockSize;
 
             //get building center
-            Vector2 center = QuadCenter
-            (
-                building.topLeftCorner + xy, 
-                building.topRightCorner + xy, 
-                building.bottomLeftCorner + xy, 
-                building.bottomRightCorner + xy
-            );
-            
-            //convert relative coords
-            Vector2[] groundPoints = new Vector2[4]
-            {
-                building.topLeftCorner + xy - center,
-                building.topRightCorner + xy - center,
-                building.bottomLeftCorner + xy - center,
-                building.bottomRightCorner + xy - center
-            };
+            Vector2 center = GetGlobalCenter(building.vertices, xy);
 
             //building gameObject
             GameObject buildingGO = new GameObject(block.block.name + "|building-" + VectToName(buildingCoords));
             buildingGO.transform.SetParent(block.block.transform, true);
 
+            //building parameters
+            string wallsMat = block.end == "west" ? 
+                westEndWallMats[Random.Range(0, westEndWallMats.Length)] :
+                eastEndWallMats[Random.Range(0, eastEndWallMats.Length)];
+
             //walls rendering
-            GameObject walls = RenderWalls(groundPoints, center, building.floorNumber * floorHeight, block.direction, buildingGO.name + "-walls", wallMaterials[Random.Range(0, wallMaterials.Length)]);
+            GameObject walls = RenderQuad
+            (
+                GetRelativeVertices(building.vertices, xy, center), 
+                center,
+                building.floorNumber * floorHeight, 
+                buildingGO.name + "-walls", 
+                Resources.Load<Material>($"Materials/{wallsMat}"), 
+                0.15f,
+                new bool[]{true, true, true, true, true, false}
+            );
+
             walls.transform.SetParent(buildingGO.transform, true);
         }
     }

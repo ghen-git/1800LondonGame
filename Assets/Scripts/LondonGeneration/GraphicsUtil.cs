@@ -1,9 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Util;
 
 public static class GraphicsUtil
 {
+    public static Vector2[] GetRelativeVertices(Vector2[] vertices, Vector2 relativeTo, Vector2 center)
+    {
+        return new Vector2[4]
+        {
+            vertices[0] + relativeTo - center,
+            vertices[1] + relativeTo - center,
+            vertices[2] + relativeTo - center,
+            vertices[3] + relativeTo - center
+        };
+    }
+
+    public static Vector2 GetGlobalCenter(Vector2[] vertices, Vector2 relativeTo)
+    {
+        return QuadCenter
+        (
+            vertices[0] + relativeTo, 
+            vertices[1] + relativeTo, 
+            vertices[2] + relativeTo, 
+            vertices[3] + relativeTo
+        );
+    }
+
     //3d quad rendering
     public static GameObject RenderQuad(Vector2[] baseVertices, Vector2 pos, float height, string name, Material material, float uvScale, bool[] faces = null)
     {

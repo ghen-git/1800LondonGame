@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,6 +14,7 @@ public class LondonGenerator : MonoBehaviour
     Vector2Int[] loadedBounds; // top-left, top-right, bottom-left, bottom-right
     BlockGenerator blockGenerator;
     RoadGenerator roadGenerator;
+    int seed;
 
     void Start()
     {
@@ -22,7 +22,13 @@ public class LondonGenerator : MonoBehaviour
 
         blockGenerator = GetComponent<BlockGenerator>();
         roadGenerator = GetComponent<RoadGenerator>();
-        roadGenerator = GetComponent<RoadGenerator>();
+
+        Random.InitState(seed);
+        perlinOffset = new Vector2Int
+        (
+            Random.Range(0, 10000),
+            Random.Range(0, 10000)
+        );
 
         CalculateBounds();
         blockGenerator.Init();
@@ -30,17 +36,6 @@ public class LondonGenerator : MonoBehaviour
         blockGenerator.LoadBlocks(bounds);
         roadGenerator.LoadRoads(bounds);
         loadedBounds = bounds;
-
-        RenderQuad
-        (
-            new Vector2[]{new Vector2(-1, 1), new Vector2(1, 1), new Vector2(-1, -1), new Vector2(1, -1)}, 
-            Vector2.zero,
-            2f, 
-            "cock", 
-            Resources.Load<Material>("Materials/Ground/Road"), 
-            0.15f,
-            new bool[]{true, true, true, true, true, false}
-        );
     }
     
     void Update()
