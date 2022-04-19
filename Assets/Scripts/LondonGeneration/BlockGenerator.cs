@@ -59,7 +59,7 @@ public class Line
 
     public Line PerpendicularAtPoint(Vector2 p)
     {
-        float m = -1 / this.m;
+        float m = -(1 / this.m);
         float q = p.y - (m * p.x);
         
         return new Line(m, q);
@@ -162,6 +162,50 @@ public class Block
             edge.Remove(oldPoint);
         else
             edge.Add(point);
+    }
+
+    public static Vector2[] SortSidewalkY(List<Vector2> sidewalkList)
+    {
+        Vector2[] sidewalk = sidewalkList.ToArray();
+        int maxYIndex;
+        Vector2 tmp;
+
+        for(int i = 0; i < sidewalk.Length; i++)
+        {
+            maxYIndex = sidewalk.Length - 1;
+
+            for(int j = i; j < sidewalk.Length; j++)
+                if(sidewalk[j].y > sidewalk[maxYIndex].y)
+                    maxYIndex = j;
+
+            tmp = sidewalk[i];
+            sidewalk[i] = sidewalk[maxYIndex];
+            sidewalk[maxYIndex] = tmp;
+        }
+
+        return sidewalk;
+    }
+
+    public static Vector2[] SortSidewalkX(List<Vector2> sidewalkList)
+    {
+        Vector2[] sidewalk = sidewalkList.ToArray();
+        int maxXIndex;
+        Vector2 tmp;
+
+        for(int i = 0; i < sidewalk.Length; i++)
+        {
+            maxXIndex = sidewalk.Length - 1;
+
+            for(int j = i; j < sidewalk.Length; j++)
+                if(sidewalk[j].x > sidewalk[maxXIndex].x)
+                    maxXIndex = j;
+
+            tmp = sidewalk[i];
+            sidewalk[i] = sidewalk[maxXIndex];
+            sidewalk[maxXIndex] = tmp;
+        }
+
+        return sidewalk;
     }
 }
 
@@ -288,7 +332,7 @@ public class BlockGenerator : MonoBehaviour
             topLeft = new Vector2
             (
                 blockMap[new Vector2Int(coords.x, coords.y + 1)].bottomLeft.x, 
-                - ((blockSize - roadSize) / 2) + UnityEngine.Random.Range(-blockSizeVariation, blockSizeVariation)
+                blockMap[new Vector2Int(coords.x, coords.y + 1)].bottomLeft.y + (blockSize - roadSize) 
             );
         else 
             topLeft = new Vector2
@@ -301,8 +345,8 @@ public class BlockGenerator : MonoBehaviour
         if(blockMap.ContainsKey(new Vector2Int(coords.x + 1, coords.y)))
             topRight = new Vector2
             (
-                blockMap[new Vector2Int(coords.x, coords.y + 1)].bottomRight.x, 
-                blockMap[new Vector2Int(coords.x, coords.y + 1)].bottomRight.y + (blockSize - roadSize)
+                blockMap[new Vector2Int(coords.x + 1, coords.y)].bottomRight.x, 
+                blockMap[new Vector2Int(coords.x + 1, coords.y)].bottomRight.y + (blockSize - roadSize)
             );
         else if(blockMap.ContainsKey(new Vector2Int(coords.x, coords.y + 1)))
             topRight = new Vector2

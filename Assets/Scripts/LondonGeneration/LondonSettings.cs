@@ -28,6 +28,7 @@ public static class LondonSettings
     public const float sidewalkHeight = 0.5f;
     public const string westEndRoadMat = "Ground/Road";
     public const string eastEndRoadMat = "Ground/SecondaryRoad";
+    public const float sidewalkOffetTolerance = 100f;
 
     #endregion
 
