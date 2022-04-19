@@ -6,11 +6,31 @@ using static Util;
 using static GraphicsUtil;
 using static LondonSettings;
 
+public class Road
+{
+    public Vector2 center;
+    public GameObject road;
+    public string end;
+    public Vector2[] vertices;
+
+    public Road(Vector2 center, GameObject road, string end, Vector2[] vertices)
+    {
+        this.center = center;
+        this.road = road;
+        this.end = end;
+        this.vertices = vertices;
+    }
+}
+
 public class RoadGenerator : MonoBehaviour
 {
     Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();
 
-    // Start is called before the first frame update
+    void Awake()
+    {
+        LondonGenerator.onLondonGenerationStart += Init;
+    }
+
     public void Init()
     {
         blockMap = GetComponent<LondonGenerator>().blockMap;
@@ -18,8 +38,8 @@ public class RoadGenerator : MonoBehaviour
 
     void RenderRoad(Vector2Int block)
     {
-        Vector2[] verticalRoad = new Vector2[4];
-        Vector2[] horizontalRoad = new Vector2[4];
+        Vector2[] verticalVertices = new Vector2[4];
+        Vector2[] horizontalVertices = new Vector2[4];
 
         string verticalType = 
             blockMap[block].end == "west" && blockMap[new Vector2Int(block.x + 1, block.y)].end == "west" ? "west" :
@@ -51,40 +71,54 @@ public class RoadGenerator : MonoBehaviour
         );
 
         //vertical road top left
-        verticalRoad[0] = blockMap[block].topRight + xy - verticalCenter;
+        verticalVertices[0] = blockMap[block].topRight + xy - verticalCenter;
         //vertical road top right
-        verticalRoad[1] = blockMap[new Vector2Int(block.x + 1, block.y)].topLeft + x1y - verticalCenter;
+        verticalVertices[1] = blockMap[new Vector2Int(block.x + 1, block.y)].topLeft + x1y - verticalCenter;
         //vertical road bottom left
-        verticalRoad[2] = blockMap[block].bottomRight + xy - verticalCenter;
+        verticalVertices[2] = blockMap[block].bottomRight + xy - verticalCenter;
         //vertical road bottom right
-        verticalRoad[3] = blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft + x1y - verticalCenter;
+        verticalVertices[3] = blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft + x1y - verticalCenter;
 
         //horizontal road top left
-        horizontalRoad[0] = blockMap[new Vector2Int(block.x, block.y + 1)].bottomLeft + xy1 - horizontalCenter;
+        horizontalVertices[0] = blockMap[new Vector2Int(block.x, block.y + 1)].bottomLeft + xy1 - horizontalCenter;
         //horizontal road top right
-        horizontalRoad[1] = blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight + xy1 - horizontalCenter;
+        horizontalVertices[1] = blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight + xy1 - horizontalCenter;
         //horizontal road bottom left
-        horizontalRoad[2] = blockMap[block].topLeft + xy - horizontalCenter;
+        horizontalVertices[2] = blockMap[block].topLeft + xy - horizontalCenter;
         //horizontal road bottom right
-        horizontalRoad[3] = blockMap[block].topRight + xy - horizontalCenter;
+        horizontalVertices[3] = blockMap[block].topRight + xy - horizontalCenter;
 
         //quads rendering
         GameObject verticalRoadGO = RenderQuad
         (
-            verticalRoad, verticalCenter,  VectToName(block) + "vertical",
+            verticalVertices, verticalCenter,  VectToName(block) + "vertical",
             Resources.Load<Material>($"Materials/{ (verticalType == "west" ? westEndRoadMat : eastEndRoadMat) }"), 
             verticalType == "west" ? 0.15f : 0.3f
         );
         GameObject horizontalRoadGO = RenderQuad
         (
-            horizontalRoad, horizontalCenter,  VectToName(block) + "horizontal", 
+            horizontalVertices, horizontalCenter,  VectToName(block) + "horizontal", 
             Resources.Load<Material>($"Materials/{ (horizontalType == "west" ? westEndRoadMat : eastEndRoadMat) }"),
             horizontalType == "west" ? 0.15f : 0.3f
         );
 
-        //sidewalk generation
+        Road verticalRoad = new Road(verticalCenter, verticalRoadGO, verticalType, verticalVertices);
+        Road horizontalRoad = new Road(horizontalCenter, horizontalRoadGO, horizontalType, horizontalVertices);
 
-        if(verticalType == "west")
+        GenerateSidewalks(block, xy, x1y, xy1, horizontalRoad, verticalRoad);
+        PlaceStreetLights(block, xy, x1y, xy1, horizontalRoad, verticalRoad);
+    }
+
+    void PlaceStreetLights(Vector2Int block, Vector2 xy, Vector2 x1y, Vector2 xy1, Road verticalRoad, Road horizontalRoad)
+    {
+        //vertical road
+
+        //horizontal road
+    }
+
+    void GenerateSidewalks(Vector2Int block, Vector2 xy, Vector2 x1y, Vector2 xy1, Road verticalRoad, Road horizontalRoad)
+    {
+        if(verticalRoad.end == "west")
         {
             //vertical sidewalk left
             RenderSidewalk
@@ -100,17 +134,17 @@ public class RoadGenerator : MonoBehaviour
                     return new Vector2[4]
                     {
                         //sidewalk top left
-                        top + xy - verticalCenter,
+                        top + xy - verticalRoad.center,
                         //sidewalk top right
-                        topLine.PointOnLine(top, topLine.PointFromX(top.x + sidewalkOffetTolerance), sidewalkSize) + xy - verticalCenter,
+                        topLine.PointOnLine(top, topLine.PointFromX(top.x + sidewalkOffetTolerance), sidewalkSize) + xy - verticalRoad.center,
                         //sidewalk bottom left
-                        bottom + xy - verticalCenter,
+                        bottom + xy - verticalRoad.center,
                         //sidewalk bottom right
-                        bottomLine.PointOnLine(bottom, bottomLine.PointFromX(bottom.x + sidewalkOffetTolerance), sidewalkSize) + xy - verticalCenter
+                        bottomLine.PointOnLine(bottom, bottomLine.PointFromX(bottom.x + sidewalkOffetTolerance), sidewalkSize) + xy - verticalRoad.center
                     };
                 },
-                verticalCenter,
-                verticalRoadGO,
+                verticalRoad.center,
+                verticalRoad.road,
                 new bool[6]{false, true, true, true, true, false}
             );
             
@@ -128,22 +162,22 @@ public class RoadGenerator : MonoBehaviour
                     return new Vector2[4]
                     {
                         //sidewalk top left
-                        topLine.PointOnLine(top, topLine.PointFromX(top.x - sidewalkOffetTolerance), sidewalkSize) + x1y - verticalCenter,
+                        topLine.PointOnLine(top, topLine.PointFromX(top.x - sidewalkOffetTolerance), sidewalkSize) + x1y - verticalRoad.center,
                         //sidewalk top right
-                        top + x1y - verticalCenter,
+                        top + x1y - verticalRoad.center,
                         //sidewalk bottom left
-                        bottomLine.PointOnLine(bottom, bottomLine.PointFromX(bottom.x - sidewalkOffetTolerance), sidewalkSize) + x1y - verticalCenter,
+                        bottomLine.PointOnLine(bottom, bottomLine.PointFromX(bottom.x - sidewalkOffetTolerance), sidewalkSize) + x1y - verticalRoad.center,
                         //sidewalk bottom right
-                        bottom + x1y - verticalCenter
+                        bottom + x1y - verticalRoad.center
                     };
                 },
-                verticalCenter,
-                verticalRoadGO,
+                verticalRoad.center,
+                verticalRoad.road,
                 new bool[6]{true, true, false, true, true, false}
             );
         }
 
-        if(horizontalType == "west")
+        if(horizontalRoad.end == "west")
         {
             //horizontal sidewalk bottom
             RenderSidewalk
@@ -159,17 +193,17 @@ public class RoadGenerator : MonoBehaviour
                     return new Vector2[4]
                     {
                         //sidewalk top left
-                        bottomLine.PointOnLine(bottom, bottomLine.PointFromY(bottom.y + sidewalkOffetTolerance), sidewalkSize) + xy - horizontalCenter,
+                        bottomLine.PointOnLine(bottom, bottomLine.PointFromY(bottom.y + sidewalkOffetTolerance), sidewalkSize) + xy - horizontalRoad.center,
                         //sidewalk top right
-                        topLine.PointOnLine(top, topLine.PointFromY(top.y + sidewalkOffetTolerance), sidewalkSize) + xy - horizontalCenter,
+                        topLine.PointOnLine(top, topLine.PointFromY(top.y + sidewalkOffetTolerance), sidewalkSize) + xy - horizontalRoad.center,
                         //sidewalk bottom left
-                        bottom + xy - horizontalCenter,
+                        bottom + xy - horizontalRoad.center,
                         //sidewalk bottom right
-                        top + xy - horizontalCenter
+                        top + xy - horizontalRoad.center
                     };
                 },
-                horizontalCenter,
-                horizontalRoadGO,
+                horizontalRoad.center,
+                horizontalRoad.road,
                 new bool[6]{true, true, true, false, true, false}
             );
 
@@ -187,17 +221,17 @@ public class RoadGenerator : MonoBehaviour
                     return new Vector2[4]
                     {
                         //sidewalk top left
-                        bottom + xy1 - horizontalCenter,
+                        bottom + xy1 - horizontalRoad.center,
                         //sidewalk top right
-                        top + xy1 - horizontalCenter,
+                        top + xy1 - horizontalRoad.center,
                         //sidewalk bottom left
-                        bottomLine.PointOnLine(bottom, bottomLine.PointFromY(bottom.y - sidewalkOffetTolerance), sidewalkSize) + xy1 - horizontalCenter,
+                        bottomLine.PointOnLine(bottom, bottomLine.PointFromY(bottom.y - sidewalkOffetTolerance), sidewalkSize) + xy1 - horizontalRoad.center,
                         //sidewalk bottom right
-                        topLine.PointOnLine(top, topLine.PointFromY(top.y - sidewalkOffetTolerance), sidewalkSize) + xy1 - horizontalCenter
+                        topLine.PointOnLine(top, topLine.PointFromY(top.y - sidewalkOffetTolerance), sidewalkSize) + xy1 - horizontalRoad.center
                     };
                 },
-                horizontalCenter,
-                horizontalRoadGO,
+                horizontalRoad.center,
+                horizontalRoad.road,
                 new bool[6]{true, false, true, true, true, false}
             );
         }

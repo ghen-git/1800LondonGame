@@ -4,7 +4,7 @@ using UnityEngine;
 using static LondonSettings;
 using static GraphicsUtil;
 
-public class LondonGenerator : MonoBehaviour
+public partial class LondonGenerator : MonoBehaviour
 {
 
     [System.NonSerialized]
@@ -15,6 +15,11 @@ public class LondonGenerator : MonoBehaviour
     BlockGenerator blockGenerator;
     RoadGenerator roadGenerator;
     int seed;
+
+    public delegate void LondonGenerationStartEventHandler();
+    public delegate void LondonGenerationStartedEventHandler(Vector2Int[] bounds, Vector2Int[] loadedBounds);
+    public static LondonGenerationStartEventHandler onLondonGenerationStart;
+    public static LondonGenerationStartedEventHandler onLondonGenerationStarted;
 
     void Start()
     {
@@ -31,11 +36,15 @@ public class LondonGenerator : MonoBehaviour
         );
 
         CalculateBounds();
-        blockGenerator.Init();
-        roadGenerator.Init();
+
+        onLondonGenerationStart();
+
         blockGenerator.LoadBlocks(bounds);
         roadGenerator.LoadRoads(bounds);
+
         loadedBounds = bounds;
+
+        onLondonGenerationStarted(bounds, loadedBounds);
     }
     
     void Update()

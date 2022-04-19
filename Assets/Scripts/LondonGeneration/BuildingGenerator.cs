@@ -40,71 +40,83 @@ public class BuildingGenerator : MonoBehaviour
 {
     Dictionary<Vector2Int, Building> buildings;
 
+    public Dictionary<Vector2Int, Building> GenerateBuildings(Block block)
+    {
+        GenerateBuildingsBounds(block);
+
+        return buildings;
+    }
+
+    public void RenderBuildings(Block block, Vector2Int coords)
+    {
+        foreach(Vector2Int buildingCoords in block.buildings.Keys)
+        {
+            Building building = block.buildings[buildingCoords];
+            Vector2 xy = new Vector2(coords.x, coords.y) * blockSize;
+
+            //get building center
+            Vector2 center = GetGlobalCenter(building.vertices, xy);
+
+            //building gameObject
+            GameObject buildingGO = new GameObject(block.block.name + "|building-" + VectToName(buildingCoords));
+            buildingGO.transform.SetParent(block.block.transform, true);
+
+            //building parameters
+            string wallsMat = block.end == "west" ? 
+                westEndWallMats[Random.Range(0, westEndWallMats.Length)] :
+                eastEndWallMats[Random.Range(0, eastEndWallMats.Length)];
+
+            //walls rendering
+            GameObject walls = RenderQuad
+            (
+                GetRelativeVertices(building.vertices, xy, center), 
+                center,
+                building.floorNumber * floorHeight, 
+                buildingGO.name + "-walls", 
+                Resources.Load<Material>($"Materials/{wallsMat}"), 
+                0.15f,
+                new bool[]{true, true, true, true, true, false}
+            );
+
+            walls.transform.SetParent(buildingGO.transform, true);
+        }
+    }
+
     void GenerateBuilding(Block block, Vector2Int id, Building building)
     {
-        //kills weird looking ninja star buildings
-        if(Mathf.Abs(AngleFrom3Points(building.bottomLeftCorner, building.topLeftCorner, building.topRightCorner)) < Mathf.PI / 4 + 0.1f)
-            return;
-        if(Mathf.Abs(AngleFrom3Points(building.topLeftCorner, building.topRightCorner, building.bottomRightCorner)) < Mathf.PI / 4 + 0.1f)
-            return;
-        if(Mathf.Abs(AngleFrom3Points(building.topRightCorner, building.bottomRightCorner, building.bottomLeftCorner)) < Mathf.PI / 4 + 0.1f)
-            return;
-        if(Mathf.Abs(AngleFrom3Points(building.bottomRightCorner, building.bottomLeftCorner, building.topLeftCorner)) < Mathf.PI / 4 + 0.1f)
+        if(!CanGenerate(building, block))
             return;
 
-        //kills buildings that exit from the block borders
-        if(!PointInQuad(building.topLeftCorner, block))
-            return;
-        if(!PointInQuad(building.topRightCorner, block))
-            return;
-        if(!PointInQuad(building.bottomLeftCorner, block))
-            return;
-        if(!PointInQuad(building.bottomRightCorner, block))
-            return;
-
-        //adds left edge sidewalks
-        if(block.leftEdge.ContainsPoint(building.bottomLeftCorner))
-            block.AddSidewalkPoint(building.bottomLeftCorner, block.leftSidewalkPoints);
-        if(block.leftEdge.ContainsPoint(building.topLeftCorner))
-            block.AddSidewalkPoint(building.topLeftCorner, block.leftSidewalkPoints);
-        if(block.leftEdge.ContainsPoint(building.topRightCorner))
-            block.AddSidewalkPoint(building.topRightCorner, block.leftSidewalkPoints);
-        if(block.leftEdge.ContainsPoint(building.bottomRightCorner))
-            block.AddSidewalkPoint(building.bottomRightCorner, block.leftSidewalkPoints);
-
-        //adds top edge sidewalks
-        if(block.topEdge.ContainsPoint(building.bottomLeftCorner))
-            block.AddSidewalkPoint(building.bottomLeftCorner, block.topSidewalkPoints);
-        if(block.topEdge.ContainsPoint(building.topLeftCorner))
-            block.AddSidewalkPoint(building.topLeftCorner, block.topSidewalkPoints);
-        if(block.topEdge.ContainsPoint(building.topRightCorner))
-            block.AddSidewalkPoint(building.topRightCorner, block.topSidewalkPoints);
-        if(block.topEdge.ContainsPoint(building.bottomRightCorner))
-            block.AddSidewalkPoint(building.bottomRightCorner, block.topSidewalkPoints);
-
-        //adds right edge sidewalks
-        if(block.rightEdge.ContainsPoint(building.bottomLeftCorner))
-            block.AddSidewalkPoint(building.bottomLeftCorner, block.rightSidewalkPoints);
-        if(block.rightEdge.ContainsPoint(building.topLeftCorner))
-            block.AddSidewalkPoint(building.topLeftCorner, block.rightSidewalkPoints);
-        if(block.rightEdge.ContainsPoint(building.topRightCorner))
-            block.AddSidewalkPoint(building.topRightCorner, block.rightSidewalkPoints);
-        if(block.rightEdge.ContainsPoint(building.bottomRightCorner))
-            block.AddSidewalkPoint(building.bottomRightCorner, block.rightSidewalkPoints);
-
-        //adds bottom edge sidewalks
-        if(block.bottomEdge.ContainsPoint(building.bottomLeftCorner))
-            block.AddSidewalkPoint(building.bottomLeftCorner, block.bottomSidewalkPoints);
-        if(block.bottomEdge.ContainsPoint(building.topLeftCorner))
-            block.AddSidewalkPoint(building.topLeftCorner, block.bottomSidewalkPoints);
-        if(block.bottomEdge.ContainsPoint(building.topRightCorner))
-            block.AddSidewalkPoint(building.topRightCorner, block.bottomSidewalkPoints);
-        if(block.bottomEdge.ContainsPoint(building.bottomRightCorner))
-            block.AddSidewalkPoint(building.bottomRightCorner, block.bottomSidewalkPoints);
+        block.CalculateSidewalks(building);
 
         building.floorNumber = Random.Range(minFloors, maxFloors + 1);
 
         buildings.Add(id, building);
+    }
+
+    bool CanGenerate(Building building, Block block)
+    {
+        //kills weird looking ninja star buildings
+        if(Mathf.Abs(AngleFrom3Points(building.bottomLeftCorner, building.topLeftCorner, building.topRightCorner)) < Mathf.PI / 4 + 0.1f)
+            return false;
+        if(Mathf.Abs(AngleFrom3Points(building.topLeftCorner, building.topRightCorner, building.bottomRightCorner)) < Mathf.PI / 4 + 0.1f)
+            return false;
+        if(Mathf.Abs(AngleFrom3Points(building.topRightCorner, building.bottomRightCorner, building.bottomLeftCorner)) < Mathf.PI / 4 + 0.1f)
+            return false;
+        if(Mathf.Abs(AngleFrom3Points(building.bottomRightCorner, building.bottomLeftCorner, building.topLeftCorner)) < Mathf.PI / 4 + 0.1f)
+            return false;
+
+        //kills buildings that exit from the block borders
+        if(!PointInQuad(building.topLeftCorner, block))
+            return false;
+        if(!PointInQuad(building.topRightCorner, block))
+            return false;
+        if(!PointInQuad(building.bottomLeftCorner, block))
+            return false;
+        if(!PointInQuad(building.bottomRightCorner, block))
+            return false;
+
+        return true;
     }
 
     Building GenerateBounds(Block block, float depth, float inset, bool rightConstraint, float initialDistance, Vector2 top, Vector2 bottom, Line edge)
@@ -223,7 +235,7 @@ public class BuildingGenerator : MonoBehaviour
     
     //i swear this code was very hard to write and looks like spaghetti
     //go easy on me
-    public Dictionary<Vector2Int, Building> GenerateBuildings(Block block)
+    public void GenerateBuildingsBounds(Block block)
     {
         buildings = new Dictionary<Vector2Int, Building>();
 
@@ -489,8 +501,6 @@ public class BuildingGenerator : MonoBehaviour
             if(Vector2.Distance(rightBuilding.topLeftCorner, rightBuilding.bottomLeftCorner) >= buildingScale)
                 GenerateBuilding(block, new Vector2Int(-buildStep, rowStep), rightBuilding);
         }
-
-        return buildings;
     }
 
     int GetDepth(int depth = minBuildDepth)
@@ -547,40 +557,5 @@ public class BuildingGenerator : MonoBehaviour
 
         return 
             segmentLength - rowOffset - buildingScale > 0;
-    }
-
-    public void RenderBuildings(Block block, Vector2Int coords)
-    {
-        foreach(Vector2Int buildingCoords in block.buildings.Keys)
-        {
-            Building building = block.buildings[buildingCoords];
-            Vector2 xy = new Vector2(coords.x, coords.y) * blockSize;
-
-            //get building center
-            Vector2 center = GetGlobalCenter(building.vertices, xy);
-
-            //building gameObject
-            GameObject buildingGO = new GameObject(block.block.name + "|building-" + VectToName(buildingCoords));
-            buildingGO.transform.SetParent(block.block.transform, true);
-
-            //building parameters
-            string wallsMat = block.end == "west" ? 
-                westEndWallMats[Random.Range(0, westEndWallMats.Length)] :
-                eastEndWallMats[Random.Range(0, eastEndWallMats.Length)];
-
-            //walls rendering
-            GameObject walls = RenderQuad
-            (
-                GetRelativeVertices(building.vertices, xy, center), 
-                center,
-                building.floorNumber * floorHeight, 
-                buildingGO.name + "-walls", 
-                Resources.Load<Material>($"Materials/{wallsMat}"), 
-                0.15f,
-                new bool[]{true, true, true, true, true, false}
-            );
-
-            walls.transform.SetParent(buildingGO.transform, true);
-        }
     }
 }

@@ -154,6 +154,49 @@ public class Block
         bottomSidewalkPoints = new List<Vector2>();
     }
 
+    public void CalculateSidewalks(Building building)
+    {
+        //adds left edge sidewalks
+        if(leftEdge.ContainsPoint(building.bottomLeftCorner))
+            AddSidewalkPoint(building.bottomLeftCorner, leftSidewalkPoints);
+        if(leftEdge.ContainsPoint(building.topLeftCorner))
+            AddSidewalkPoint(building.topLeftCorner, leftSidewalkPoints);
+        if(leftEdge.ContainsPoint(building.topRightCorner))
+            AddSidewalkPoint(building.topRightCorner, leftSidewalkPoints);
+        if(leftEdge.ContainsPoint(building.bottomRightCorner))
+            AddSidewalkPoint(building.bottomRightCorner, leftSidewalkPoints);
+
+        //adds top edge sidewalks
+        if(topEdge.ContainsPoint(building.bottomLeftCorner))
+            AddSidewalkPoint(building.bottomLeftCorner, topSidewalkPoints);
+        if(topEdge.ContainsPoint(building.topLeftCorner))
+            AddSidewalkPoint(building.topLeftCorner, topSidewalkPoints);
+        if(topEdge.ContainsPoint(building.topRightCorner))
+            AddSidewalkPoint(building.topRightCorner, topSidewalkPoints);
+        if(topEdge.ContainsPoint(building.bottomRightCorner))
+            AddSidewalkPoint(building.bottomRightCorner, topSidewalkPoints);
+
+        //adds right edge sidewalks
+        if(rightEdge.ContainsPoint(building.bottomLeftCorner))
+            AddSidewalkPoint(building.bottomLeftCorner, rightSidewalkPoints);
+        if(rightEdge.ContainsPoint(building.topLeftCorner))
+            AddSidewalkPoint(building.topLeftCorner, rightSidewalkPoints);
+        if(rightEdge.ContainsPoint(building.topRightCorner))
+            AddSidewalkPoint(building.topRightCorner, rightSidewalkPoints);
+        if(rightEdge.ContainsPoint(building.bottomRightCorner))
+            AddSidewalkPoint(building.bottomRightCorner, rightSidewalkPoints);
+
+        //adds bottom edge sidewalks
+        if(bottomEdge.ContainsPoint(building.bottomLeftCorner))
+            AddSidewalkPoint(building.bottomLeftCorner, bottomSidewalkPoints);
+        if(bottomEdge.ContainsPoint(building.topLeftCorner))
+            AddSidewalkPoint(building.topLeftCorner, bottomSidewalkPoints);
+        if(bottomEdge.ContainsPoint(building.topRightCorner))
+            AddSidewalkPoint(building.topRightCorner, bottomSidewalkPoints);
+        if(bottomEdge.ContainsPoint(building.bottomRightCorner))
+            AddSidewalkPoint(building.bottomRightCorner, bottomSidewalkPoints);
+    }
+
     public void AddSidewalkPoint(Vector2 point, List<Vector2> edge)
     {
         Vector2 oldPoint = edge.Find( p => p.x == point.x && p.y == point.y);
@@ -214,7 +257,11 @@ public class BlockGenerator : MonoBehaviour
     Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();
     BuildingGenerator buildingGenerator;
 
-    // Start is called before the first frame update
+    void Awake()
+    {
+        LondonGenerator.onLondonGenerationStart += Init;
+    }
+
     public void Init()
     {
         blockMap = GetComponent<LondonGenerator>().blockMap;
