@@ -349,7 +349,7 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.5
-  m_Height: 2
+  m_Height: 3.19
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1222904288
@@ -401,7 +401,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1222904285}
-  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 2959467708922500008, guid: 009b0c9c81ec56345a3a247ad1aeb7b8, type: 3}
 --- !u!4 &1222904290
 Transform:
   m_ObjectHideFlags: 0
@@ -410,8 +410,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1222904285}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -517, y: 0, z: -32}
+  m_LocalScale: {x: 0.7, y: 0.7, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -476,7 +476,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81d467f3b4f90df41bf3bbc895b1fda5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roadSizeVariation: 15
 --- !u!114 &1431673915
 MonoBehaviour:
   m_ObjectHideFlags: 0

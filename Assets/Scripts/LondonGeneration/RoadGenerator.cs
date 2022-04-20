@@ -106,14 +106,137 @@ public class RoadGenerator : MonoBehaviour
         Road horizontalRoad = new Road(horizontalCenter, horizontalRoadGO, horizontalType, horizontalVertices);
 
         GenerateSidewalks(block, xy, x1y, xy1, horizontalRoad, verticalRoad);
-        PlaceStreetLights(block, xy, x1y, xy1, horizontalRoad, verticalRoad);
+
+        //other objects placement
+
+        //fence posts
+        GameObject fencePost = Resources.Load<GameObject>("Prefabs/FencePost");
+        PlaceAtOffset(fencePost, fencePostDistance, fencePostOffset, block, verticalRoad, true);
+        PlaceAtOffset(fencePost, fencePostDistance, fencePostOffset, block, horizontalRoad, false);
     }
 
-    void PlaceStreetLights(Vector2Int block, Vector2 xy, Vector2 x1y, Vector2 xy1, Road verticalRoad, Road horizontalRoad)
+    void PlaceRandom()
     {
-        //vertical road
 
-        //horizontal road
+    }
+
+    void PlaceAtOffset(GameObject prefab, float distance, float offset, Vector2Int block, Road road, bool vertical)
+    {
+        float leftLength;
+        float rightLength;
+        Vector2 startingLeft;
+        Vector2 startingRight;
+        Line leftLine;
+        Line rightLine;
+        Vector2 objectPos;     
+
+        //frequently used formulas calculation for performance
+        Vector2 xy = new Vector2(block.x, block.y) * blockSize;
+        Vector2 x1y = new Vector2(block.x + 1, block.y) * blockSize;
+        Vector2 xy1 = new Vector2(block.x, block.y + 1) * blockSize;
+
+        if(vertical)
+        {
+            leftLength = Vector2.Distance(blockMap[block].bottomRight, blockMap[block].topRight);
+            rightLength = Vector2.Distance(blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft, blockMap[new Vector2Int(block.x + 1, block.y)].topLeft);
+
+            startingLeft = blockMap[block].rightEdge.PerpendicularAtPoint(blockMap[block].bottomRight).PointOnLine
+            (
+                blockMap[block].bottomRight, 
+                blockMap[block].rightEdge.PerpendicularAtPoint(blockMap[block].bottomRight).PointFromX(blockMap[block].bottomRight.x + offsetTolerance), 
+                offset
+            );
+            startingRight = blockMap[new Vector2Int(block.x + 1, block.y)].leftEdge.PerpendicularAtPoint(blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft).PointOnLine
+            (
+                blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft, 
+                blockMap[new Vector2Int(block.x + 1, block.y)].leftEdge.PerpendicularAtPoint(blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft).PointFromX(blockMap[new Vector2Int(block.x + 1, block.y)].bottomLeft.x - offsetTolerance), 
+                offset
+            );
+
+            leftLine = Line.ParallelAtPoint
+            (
+                blockMap[block].rightEdge,
+                startingLeft
+            );
+            rightLine = Line.ParallelAtPoint
+            (
+                blockMap[new Vector2Int(block.x + 1, block.y)].leftEdge, 
+                startingRight
+            );
+
+            for(float i = distance / 2; i < leftLength || i < rightLength; i += distance)
+            {
+                if(i < leftLength)
+                {
+                    objectPos = leftLine.PointOnLine(startingLeft, leftLine.PointFromY(startingLeft.y + offsetTolerance), i) + xy;
+                    print(objectPos);
+                    GameObject itemGO = GameObject.Instantiate(prefab);
+                    itemGO.name = "";
+                    itemGO.transform.position = new Vector3(objectPos.x, 0, objectPos.y);
+                    itemGO.transform.SetParent(road.road.transform, true);
+                }
+                if(i < rightLength)
+                {
+                    objectPos = rightLine.PointOnLine(startingRight, rightLine.PointFromY(startingRight.y + offsetTolerance), i) + x1y;
+                    print(objectPos);
+                    GameObject itemGO = GameObject.Instantiate(prefab);
+                    itemGO.name = "";
+                    itemGO.transform.position = new Vector3(objectPos.x, 0, objectPos.y);
+                    itemGO.transform.SetParent(road.road.transform, true);
+                }
+            }
+        }
+        else
+        {
+            leftLength = Vector2.Distance(blockMap[block].topRight, blockMap[block].topLeft);
+            rightLength = Vector2.Distance(blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight, blockMap[new Vector2Int(block.x, block.y + 1)].bottomLeft);
+
+            startingLeft = blockMap[block].topEdge.PerpendicularAtPoint(blockMap[block].topRight).PointOnLine
+            (
+                blockMap[block].topRight, 
+                blockMap[block].topEdge.PerpendicularAtPoint(blockMap[block].topRight).PointFromY(blockMap[block].topRight.y + offsetTolerance), 
+                offset
+            );
+            startingRight = blockMap[new Vector2Int(block.x, block.y + 1)].bottomEdge.PerpendicularAtPoint(blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight).PointOnLine
+            (
+                blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight, 
+                blockMap[new Vector2Int(block.x, block.y + 1)].bottomEdge.PerpendicularAtPoint(blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight).PointFromY(blockMap[new Vector2Int(block.x, block.y + 1)].bottomRight.y - offsetTolerance), 
+                offset
+            );
+
+            leftLine = Line.ParallelAtPoint
+            (
+                blockMap[block].topEdge,
+                startingLeft
+            );
+            rightLine = Line.ParallelAtPoint
+            (
+                blockMap[new Vector2Int(block.x, block.y + 1)].bottomEdge, 
+                startingRight
+            );
+
+            for(float i = distance / 2; i < leftLength || i < rightLength; i += distance)
+            {
+                if(i < leftLength)
+                {
+                    objectPos = leftLine.PointOnLine(startingLeft, leftLine.PointFromX(startingLeft.y - offsetTolerance), i) + xy;
+                    print(objectPos);
+                    GameObject itemGO = GameObject.Instantiate(prefab);
+                    itemGO.name = "";
+                    itemGO.transform.position = new Vector3(objectPos.x, 0, objectPos.y);
+                    itemGO.transform.SetParent(road.road.transform, true);
+                }
+                if(i < rightLength)
+                {
+                    objectPos = rightLine.PointOnLine(startingRight, rightLine.PointFromX(startingRight.y - offsetTolerance), i) + xy1;
+                    print(objectPos);
+                    GameObject itemGO = GameObject.Instantiate(prefab);
+                    itemGO.name = "";
+                    itemGO.transform.position = new Vector3(objectPos.x, 0, objectPos.y);
+                    itemGO.transform.SetParent(road.road.transform, true);
+                }
+            }
+        }
     }
 
     void GenerateSidewalks(Vector2Int block, Vector2 xy, Vector2 x1y, Vector2 xy1, Road verticalRoad, Road horizontalRoad)
@@ -136,11 +259,11 @@ public class RoadGenerator : MonoBehaviour
                         //sidewalk top left
                         top + xy - verticalRoad.center,
                         //sidewalk top right
-                        topLine.PointOnLine(top, topLine.PointFromX(top.x + sidewalkOffetTolerance), sidewalkSize) + xy - verticalRoad.center,
+                        topLine.PointOnLine(top, topLine.PointFromX(top.x + offsetTolerance), sidewalkSize) + xy - verticalRoad.center,
                         //sidewalk bottom left
                         bottom + xy - verticalRoad.center,
                         //sidewalk bottom right
-                        bottomLine.PointOnLine(bottom, bottomLine.PointFromX(bottom.x + sidewalkOffetTolerance), sidewalkSize) + xy - verticalRoad.center
+                        bottomLine.PointOnLine(bottom, bottomLine.PointFromX(bottom.x + offsetTolerance), sidewalkSize) + xy - verticalRoad.center
                     };
                 },
                 verticalRoad.center,
@@ -162,11 +285,11 @@ public class RoadGenerator : MonoBehaviour
                     return new Vector2[4]
                     {
                         //sidewalk top left
-                        topLine.PointOnLine(top, topLine.PointFromX(top.x - sidewalkOffetTolerance), sidewalkSize) + x1y - verticalRoad.center,
+                        topLine.PointOnLine(top, topLine.PointFromX(top.x - offsetTolerance), sidewalkSize) + x1y - verticalRoad.center,
                         //sidewalk top right
                         top + x1y - verticalRoad.center,
                         //sidewalk bottom left
-                        bottomLine.PointOnLine(bottom, bottomLine.PointFromX(bottom.x - sidewalkOffetTolerance), sidewalkSize) + x1y - verticalRoad.center,
+                        bottomLine.PointOnLine(bottom, bottomLine.PointFromX(bottom.x - offsetTolerance), sidewalkSize) + x1y - verticalRoad.center,
                         //sidewalk bottom right
                         bottom + x1y - verticalRoad.center
                     };
@@ -193,9 +316,9 @@ public class RoadGenerator : MonoBehaviour
                     return new Vector2[4]
                     {
                         //sidewalk top left
-                        bottomLine.PointOnLine(bottom, bottomLine.PointFromY(bottom.y + sidewalkOffetTolerance), sidewalkSize) + xy - horizontalRoad.center,
+                        bottomLine.PointOnLine(bottom, bottomLine.PointFromY(bottom.y + offsetTolerance), sidewalkSize) + xy - horizontalRoad.center,
                         //sidewalk top right
-                        topLine.PointOnLine(top, topLine.PointFromY(top.y + sidewalkOffetTolerance), sidewalkSize) + xy - horizontalRoad.center,
+                        topLine.PointOnLine(top, topLine.PointFromY(top.y + offsetTolerance), sidewalkSize) + xy - horizontalRoad.center,
                         //sidewalk bottom left
                         bottom + xy - horizontalRoad.center,
                         //sidewalk bottom right
@@ -225,9 +348,9 @@ public class RoadGenerator : MonoBehaviour
                         //sidewalk top right
                         top + xy1 - horizontalRoad.center,
                         //sidewalk bottom left
-                        bottomLine.PointOnLine(bottom, bottomLine.PointFromY(bottom.y - sidewalkOffetTolerance), sidewalkSize) + xy1 - horizontalRoad.center,
+                        bottomLine.PointOnLine(bottom, bottomLine.PointFromY(bottom.y - offsetTolerance), sidewalkSize) + xy1 - horizontalRoad.center,
                         //sidewalk bottom right
-                        topLine.PointOnLine(top, topLine.PointFromY(top.y - sidewalkOffetTolerance), sidewalkSize) + xy1 - horizontalRoad.center
+                        topLine.PointOnLine(top, topLine.PointFromY(top.y - offsetTolerance), sidewalkSize) + xy1 - horizontalRoad.center
                     };
                 },
                 horizontalRoad.center,

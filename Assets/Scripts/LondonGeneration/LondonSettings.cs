@@ -28,7 +28,9 @@ public static class LondonSettings
     public const float sidewalkHeight = 0.5f;
     public const string westEndRoadMat = "Ground/Road";
     public const string eastEndRoadMat = "Ground/SecondaryRoad";
-    public const float sidewalkOffetTolerance = 100f;
+    public const float offsetTolerance = 100f;
+    public const float fencePostOffset = 5.5f;
+    public const float fencePostDistance = 40f;
 
     #endregion
 
@@ -59,7 +61,7 @@ public static class LondonSettings
 
     //materials
     public static string[] westEndWallMats = new string[] { "Walls/WornRedBricks", "Walls/BlackBricks", "Walls/BeigeBricks" };
-    public static string[] eastEndWallMats = new string[] { "Walls/WornRedBricks", "Walls/BrownBricks" };
+    public static string[] eastEndWallMats = new string[] { "Walls/WornRedBricks", "Walls/BrownBricks", "Walls/Cobblestone" };
 
     #endregion
 }

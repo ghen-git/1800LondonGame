@@ -15,7 +15,7 @@ public class PlayerController : MonoBehaviour
     const float mouseSensitivity = 2f;
     const float clippingFixAmount = 1f;
     Vector3 cameraOffset = new Vector3(-3, -1, 2.86f);
-    const float height = 2;
+    const float height = 3.19f;
     const float width = 2;
 
     //player states
