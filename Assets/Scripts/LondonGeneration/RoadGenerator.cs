@@ -399,9 +399,10 @@ public class RoadGenerator : MonoBehaviour
                     sidewalkCenter, 
                     sidewalkHeight, 
                     "", 
-                    Resources.Load<Material>($"Materials/{ westEndRoadMat }"), 
-                    0.15f,
-                    renderedSides
+                    Resources.Load<Material>($"Materials/{ sidewalkMat }"), 
+                    sidewalkMatScale,
+                    renderedSides,
+                    new Vector2(1.5f, 1.5f)
                 );
                 sidewalkGO.transform.SetParent(roadGO.transform, true);
 

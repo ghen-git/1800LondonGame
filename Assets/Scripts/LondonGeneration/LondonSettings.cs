@@ -24,10 +24,12 @@ public static class LondonSettings
 
     public const float roadSize = 25f;
     public const float roadSizeVariation = 15f;
-    public const float sidewalkSize = 5f;
-    public const float sidewalkHeight = 0.5f;
+    public const float sidewalkSize = 3f;
+    public const float sidewalkHeight = 0.25f;
     public const string westEndRoadMat = "Ground/Road";
     public const string eastEndRoadMat = "Ground/SecondaryRoad";
+    public const string sidewalkMat = "Ground/Sidewalk";
+    public const float sidewalkMatScale = 0.1f;
     public const float offsetTolerance = 100f;
     public const float fencePostOffset = 5.5f;
     public const float fencePostDistance = 40f;

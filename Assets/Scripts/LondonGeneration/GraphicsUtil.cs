@@ -28,8 +28,11 @@ public static class GraphicsUtil
     }
 
     //3d quad rendering
-    public static GameObject RenderQuad(Vector2[] baseVertices, Vector2 pos, float height, string name, Material material, float uvScale, bool[] faces = null)
+    public static GameObject RenderQuad(Vector2[] baseVertices, Vector2 pos, float height, string name, Material material, float uvScale, bool[] faces = null, Vector2 uvOffset = default)
     {
+        if(uvOffset == default)
+            uvOffset = Vector2.zero;
+
         GameObject quad = new GameObject();
 
         MeshRenderer meshRenderer = quad.AddComponent<MeshRenderer>();
@@ -84,7 +87,7 @@ public static class GraphicsUtil
             tris[trisLoadingOffset + 4] = vertexLoadingOffset;
             tris[trisLoadingOffset + 5] = vertexLoadingOffset + 1;
 
-            uvs = CalculateWallUVs(baseVertices[0], baseVertices[2], height, uvScale, uvs, vertexLoadingOffset);
+            uvs = CalculateWallUVs(baseVertices[0], baseVertices[2], height, uvScale, uvOffset, uvs, vertexLoadingOffset);
             
             vertexLoadingOffset += 4;
             trisLoadingOffset += 6;
@@ -105,7 +108,7 @@ public static class GraphicsUtil
             tris[trisLoadingOffset + 4] = vertexLoadingOffset;
             tris[trisLoadingOffset + 5] = vertexLoadingOffset + 1;
 
-            uvs = CalculateWallUVs(baseVertices[1], baseVertices[0], height, uvScale, uvs, vertexLoadingOffset);
+            uvs = CalculateWallUVs(baseVertices[1], baseVertices[0], height, uvScale, uvOffset, uvs, vertexLoadingOffset);
             
             vertexLoadingOffset += 4;
             trisLoadingOffset += 6;
@@ -126,7 +129,7 @@ public static class GraphicsUtil
             tris[trisLoadingOffset + 4] = vertexLoadingOffset;
             tris[trisLoadingOffset + 5] = vertexLoadingOffset + 1;
 
-            uvs = CalculateWallUVs(baseVertices[3], baseVertices[1], height, uvScale, uvs, vertexLoadingOffset);
+            uvs = CalculateWallUVs(baseVertices[3], baseVertices[1], height, uvScale, uvOffset, uvs, vertexLoadingOffset);
             
             vertexLoadingOffset += 4;
             trisLoadingOffset += 6;
@@ -147,7 +150,7 @@ public static class GraphicsUtil
             tris[trisLoadingOffset + 4] = vertexLoadingOffset;
             tris[trisLoadingOffset + 5] = vertexLoadingOffset + 1;
             
-            uvs = CalculateWallUVs(baseVertices[2], baseVertices[3], height, uvScale, uvs, vertexLoadingOffset);
+            uvs = CalculateWallUVs(baseVertices[2], baseVertices[3], height, uvScale, uvOffset, uvs, vertexLoadingOffset);
             
             vertexLoadingOffset += 4;
             trisLoadingOffset += 6;
@@ -168,7 +171,7 @@ public static class GraphicsUtil
             tris[trisLoadingOffset + 4] = vertexLoadingOffset;
             tris[trisLoadingOffset + 5] = vertexLoadingOffset + 1;
             
-            uvs = CalculateFaceUVs(baseVertices, uvScale, uvs, vertexLoadingOffset);
+            uvs = CalculateFaceUVs(baseVertices, uvScale, uvOffset, uvs, vertexLoadingOffset);
             
             vertexLoadingOffset += 4;
             trisLoadingOffset += 6;
@@ -189,7 +192,7 @@ public static class GraphicsUtil
             tris[trisLoadingOffset + 4] = vertexLoadingOffset;
             tris[trisLoadingOffset + 5] = vertexLoadingOffset + 1;
             
-            uvs = CalculateFaceUVs(baseVertices, uvScale, uvs, vertexLoadingOffset);
+            uvs = CalculateFaceUVs(baseVertices, uvScale, uvOffset, uvs, vertexLoadingOffset);
             
             vertexLoadingOffset += 4;
             trisLoadingOffset += 6;
@@ -210,27 +213,27 @@ public static class GraphicsUtil
         return quad;
     }
 
-    static Vector2[] CalculateWallUVs(Vector2 left, Vector2 right, float height, float uvScale, Vector2[] uvs, int arrayOffset = 0)
+    static Vector2[] CalculateWallUVs(Vector2 left, Vector2 right, float height, float uvScale, Vector2 uvOffset, Vector2[] uvs, int arrayOffset = 0)
     {
         float width = Vector2.Distance(left, right);
         
-        uvs[arrayOffset] = new Vector2(-width / 2, -height / 2) * uvScale;
-        uvs[arrayOffset + 1] = new Vector2(width / 2, -height / 2) * uvScale;
-        uvs[arrayOffset + 2] = new Vector2(-width / 2, height / 2) * uvScale;
-        uvs[arrayOffset + 3] = new Vector2(width / 2, height / 2) * uvScale;
+        uvs[arrayOffset] = new Vector2(-width / 2, -height / 2) * uvScale + uvOffset;
+        uvs[arrayOffset + 1] = new Vector2(width / 2, -height / 2) * uvScale + uvOffset;
+        uvs[arrayOffset + 2] = new Vector2(-width / 2, height / 2) * uvScale + uvOffset;
+        uvs[arrayOffset + 3] = new Vector2(width / 2, height / 2) * uvScale + uvOffset;
 
         return uvs;
     }
 
-    static Vector2[] CalculateFaceUVs(Vector2[] vertices, float uvScale, Vector2[] uvs, int arrayOffset = 0)
+    static Vector2[] CalculateFaceUVs(Vector2[] vertices, float uvScale, Vector2 uvOffset, Vector2[] uvs, int arrayOffset = 0)
     {
         float width = Vector2.Distance(vertices[0], vertices[1]);
         float height = Vector2.Distance(vertices[0], vertices[2]);
         
-        uvs[arrayOffset] = new Vector2(-width / 2, -height / 2) * uvScale;
-        uvs[arrayOffset + 1] = new Vector2(width / 2, -height / 2) * uvScale;
-        uvs[arrayOffset + 2] = new Vector2(-width / 2, height / 2) * uvScale;
-        uvs[arrayOffset + 3] = new Vector2(width / 2, height / 2) * uvScale;
+        uvs[arrayOffset] = new Vector2(-width / 2, -height / 2) * uvScale + uvOffset;
+        uvs[arrayOffset + 1] = new Vector2(width / 2, -height / 2) * uvScale + uvOffset;
+        uvs[arrayOffset + 2] = new Vector2(-width / 2, height / 2) * uvScale + uvOffset;
+        uvs[arrayOffset + 3] = new Vector2(width / 2, height / 2) * uvScale + uvOffset;
 
         return uvs;
     }
