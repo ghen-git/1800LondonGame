@@ -8,7 +8,7 @@ public partial class LondonGenerator : MonoBehaviour
 {
 
     [System.NonSerialized]
-    public Dictionary<Vector2Int, Block> blockMap = new Dictionary<Vector2Int, Block>();
+    public Dictionary<Vector2Int, Block> blockMap;
     Transform player;
     Vector2Int[] bounds; // top-left, top-right, bottom-left, bottom-right
     Vector2Int[] loadedBounds; // top-left, top-right, bottom-left, bottom-right
@@ -27,6 +27,9 @@ public partial class LondonGenerator : MonoBehaviour
 
         blockGenerator = GetComponent<BlockGenerator>();
         roadGenerator = GetComponent<RoadGenerator>();
+
+        seed = GetComponent<LondonSerializer>().Init("default");
+        blockMap = GetComponent<LondonSerializer>().savedMap;
 
         Random.InitState(seed);
         perlinOffset = new Vector2Int
