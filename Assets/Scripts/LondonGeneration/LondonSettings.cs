@@ -44,10 +44,8 @@ public static class LondonSettings
     public const int maxFloors = 5;
 
     //dimentions
-    public const int minBuildDepth = 1;
-    public const int maxBuildDepth = 3;
     public const int minBuildWidth = 1;
-    public const int maxBuildWidth = 2;
+    public const int maxBuildWidth = 3;
     public const int minBuildInset = 0;
     public const int maxBuildInset = 2;
     public const float secondaryRoadSize = 3f;
@@ -58,12 +56,17 @@ public static class LondonSettings
 
     //chances
     public const int startWithHouseChance = 50;
-    public const int depthIncreaseChance = 10;
-    public const int secondaryRoadChance = 10;
+    public const int secondaryRoadChance = 30;
+    public const int identicalBuildingsSegmentChance = 30;
+    public const int impasseChance = 30;
+
+    //identical buildings segment
+    public const int identicalBuildingsMinAmount = 3;
+    public const int identicalBuildingsMaxAmount = 5;
 
     //materials
     public static string[] westEndWallMats = new string[] { "Walls/WornRedBricks", "Walls/BlackBricks", "Walls/BeigeBricks" };
-    public static string[] eastEndWallMats = new string[] { "Walls/WornRedBricks", "Walls/BrownBricks", "Walls/Cobblestone" };
+    public static string[] eastEndWallMats = new string[] { "Walls/WornRedBricks", "Walls/BrownBricks", "Walls/Cobblestone", "Walls/WoodenWall" };
 
     #endregion
 }

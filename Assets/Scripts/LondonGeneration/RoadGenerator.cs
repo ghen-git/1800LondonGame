@@ -169,7 +169,6 @@ public class RoadGenerator : MonoBehaviour
                 if(i < leftLength)
                 {
                     objectPos = leftLine.PointOnLine(startingLeft, leftLine.PointFromY(startingLeft.y + offsetTolerance), i) + xy;
-                    print(objectPos);
                     GameObject itemGO = GameObject.Instantiate(prefab);
                     itemGO.name = "";
                     itemGO.transform.position = new Vector3(objectPos.x, 0, objectPos.y);
@@ -178,7 +177,6 @@ public class RoadGenerator : MonoBehaviour
                 if(i < rightLength)
                 {
                     objectPos = rightLine.PointOnLine(startingRight, rightLine.PointFromY(startingRight.y + offsetTolerance), i) + x1y;
-                    print(objectPos);
                     GameObject itemGO = GameObject.Instantiate(prefab);
                     itemGO.name = "";
                     itemGO.transform.position = new Vector3(objectPos.x, 0, objectPos.y);
@@ -220,7 +218,6 @@ public class RoadGenerator : MonoBehaviour
                 if(i < leftLength)
                 {
                     objectPos = leftLine.PointOnLine(startingLeft, leftLine.PointFromX(startingLeft.y - offsetTolerance), i) + xy;
-                    print(objectPos);
                     GameObject itemGO = GameObject.Instantiate(prefab);
                     itemGO.name = "";
                     itemGO.transform.position = new Vector3(objectPos.x, 0, objectPos.y);
@@ -229,7 +226,6 @@ public class RoadGenerator : MonoBehaviour
                 if(i < rightLength)
                 {
                     objectPos = rightLine.PointOnLine(startingRight, rightLine.PointFromX(startingRight.y - offsetTolerance), i) + xy1;
-                    print(objectPos);
                     GameObject itemGO = GameObject.Instantiate(prefab);
                     itemGO.name = "";
                     itemGO.transform.position = new Vector3(objectPos.x, 0, objectPos.y);
