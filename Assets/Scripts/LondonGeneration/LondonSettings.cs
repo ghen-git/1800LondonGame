@@ -58,6 +58,7 @@ public static class LondonSettings
     public const int startWithHouseChance = 50;
     public const int secondaryRoadChance = 30;
     public const int identicalBuildingsSegmentChance = 30;
+    public const int toupleBuildingsChance = 40;
     public const int impasseChance = 30;
 
     //identical buildings segment

@@ -13,6 +13,10 @@ public class Building
     public Vector2 bottomRightCorner;
     public int floorsNumber;
     public string wallMaterial;
+    public char direction;
+    public bool roofDirection;
+    public float width;
+    public float depth;
 
     public Vector2[] vertices
     {
@@ -34,6 +38,30 @@ public class Building
         this.topRightCorner = topRightCorner;
         this.bottomLeftCorner = bottomLeftCorner;
         this.bottomRightCorner = bottomRightCorner;
+    }
+
+    public Building(Vector2 topLeftCorner, Vector2 topRightCorner, Vector2 bottomLeftCorner, Vector2 bottomRightCorner, char direction)
+    {
+        this.topLeftCorner = topLeftCorner;
+        this.topRightCorner = topRightCorner;
+        this.bottomLeftCorner = bottomLeftCorner;
+        this.bottomRightCorner = bottomRightCorner;
+        this.direction = direction;
+
+        if(direction == 'e' || direction == 'w')
+        {
+            width = Vector2.Distance(topLeftCorner, bottomLeftCorner);
+            depth = Vector2.Distance(topLeftCorner, topRightCorner);
+
+            roofDirection = width > depth;
+        }
+        else
+        {
+            width = Vector2.Distance(topLeftCorner, topRightCorner);
+            depth = Vector2.Distance(topLeftCorner, bottomLeftCorner);
+
+            roofDirection = width < depth;
+        }
     }
 }
 
@@ -150,6 +178,10 @@ public class BuildingGenerator : MonoBehaviour
         float rowRightWidth = 0;
         BuildingRowSegment firstSegment = null;
 
+        //to generate secondary segments
+        bool hasSecondarySegments;
+        List<SegmentData> shortSegments = new List<SegmentData>();
+
         //first segment
         do
         {
@@ -158,16 +190,43 @@ public class BuildingGenerator : MonoBehaviour
             rowRightWidth = firstSegment.width / 2;
         }
         while(rowLeftWidth > edgeCenter || rowRightWidth > edgeWidth - edgeCenter);
+
+        hasSecondarySegments = firstSegment.depth > buildingScale;
         GenerateBuildingsSegment(block, firstSegment, generateBounds, edgeCenter - rowLeftWidth, rowOffset);
+
+        if(firstSegment.depth <= buildingScale)
+            shortSegments.Add(new SegmentData(firstSegment, edgeCenter - rowLeftWidth, rowOffset));
+
         topRowDepth = firstSegment.depth;
 
         //segment loop
-        while(AddSegments(block, edgeWidth, edgeCenter, maxRowDepth, ref rowLeftWidth, ref rowRightWidth, ref topRowDepth, generateBounds, rowOffset));
+        while(AddSegments(block, edgeWidth, edgeCenter, maxRowDepth, ref rowLeftWidth, ref rowRightWidth, ref topRowDepth, ref hasSecondarySegments, shortSegments, generateBounds, rowOffset));
+        
+        //secondary segments generation
+        if(hasSecondarySegments)
+        {
+            foreach(SegmentData segmentData in shortSegments)
+                GenerateBuildingsSegment(block, segmentData.segment, generateBounds, segmentData.offsetFromTopToLeft, rowOffset + buildingScale + secondaryRoadSize);
+        }
 
         return topRowDepth + (topRowDepth == buildingScale ? secondaryRoadSize : 0);
     }
 
-    bool AddSegments(Block block, float edgeWidth, float edgeCenter, float maxRowDepth, ref float rowLeftWidth, ref float rowRightWidth, ref float topRowDepth, BuildingBoundsGenerator generateBounds, float rowOffset)
+    struct SegmentData
+    {
+        public BuildingRowSegment segment;
+        public float offsetFromTopToLeft;
+        public float rowOffset;
+
+        public SegmentData(BuildingRowSegment segment, float offsetFromTopToLeft, float rowOffset)
+        {
+            this.segment = segment;
+            this.offsetFromTopToLeft = offsetFromTopToLeft;
+            this.rowOffset = rowOffset;
+        }
+    }
+
+    bool AddSegments(Block block, float edgeWidth, float edgeCenter, float maxRowDepth, ref float rowLeftWidth, ref float rowRightWidth, ref float topRowDepth, ref bool hasSecondarySegments, List<SegmentData> shortSegments, BuildingBoundsGenerator generateBounds, float rowOffset)
     {
         bool canAddMoreLeft = buildingScale * minBuildWidth + secondaryRoadSize < edgeCenter - rowLeftWidth;
         bool canAddMoreRight = buildingScale * minBuildWidth + secondaryRoadSize < edgeWidth - edgeCenter - rowRightWidth;
@@ -183,6 +242,13 @@ public class BuildingGenerator : MonoBehaviour
             if(leftSegment.depth > topRowDepth)
                 topRowDepth = leftSegment.depth;
 
+            if(!hasSecondarySegments)
+                hasSecondarySegments = leftSegment.depth > buildingScale;
+
+            if(leftSegment.depth <= buildingScale)
+                shortSegments.Add(new SegmentData(leftSegment, edgeCenter - rowLeftWidth - leftSegment.width, rowOffset));
+
+
             rowLeftWidth += leftSegment.width + (leftSegment.hasSecondaryRoad ? secondaryRoadSize : 0);
         }
 
@@ -196,6 +262,12 @@ public class BuildingGenerator : MonoBehaviour
 
             if(rightSegment.depth > topRowDepth)
                 topRowDepth = rightSegment.depth;
+                
+            if(!hasSecondarySegments)
+                hasSecondarySegments = rightSegment.depth > buildingScale;
+
+            if(rightSegment.depth <= buildingScale)
+                shortSegments.Add(new SegmentData(rightSegment, edgeCenter + rowRightWidth, rowOffset));
 
             rowRightWidth += rightSegment.width + (rightSegment.hasSecondaryRoad ? secondaryRoadSize : 0);
         }
@@ -218,6 +290,26 @@ public class BuildingGenerator : MonoBehaviour
             {
                 Building building = generateBounds(block, offsetFromTopToLeft + width * i, rowOffset, width, segment.depth, segment.inset);
                 building.wallMaterial = segmentMat;
+                building.floorsNumber = identicalBuildingsFloorsNumber;
+                GenerateBuilding(block, building);
+                buildStep++;
+            }
+        }
+        //touples
+        else if(segment.name == "touple")
+        {
+            //buildings parameters
+            string wallsMat = block.end == "west" ? 
+                westEndWallMats[Random.Range(0, westEndWallMats.Length)] :
+                eastEndWallMats[Random.Range(0, eastEndWallMats.Length)];
+            int identicalBuildingsFloorsNumber = Random.Range(minFloors, maxFloors + 1);
+            float width = (segment.width - (segment.hasSecondaryRoad ? secondaryRoadSize * 2 : 0)) / segment.buildingsNumber;
+            offsetFromTopToLeft += segment.hasSecondaryRoad ? secondaryRoadSize : 0;
+            
+            for(int i = 0; i < segment.buildingsNumber; i++)
+            {
+                Building building = generateBounds(block, offsetFromTopToLeft + width * i, rowOffset, width, segment.depth, segment.inset);
+                building.wallMaterial = wallsMat;
                 building.floorsNumber = identicalBuildingsFloorsNumber;
                 GenerateBuilding(block, building);
                 buildStep++;
@@ -259,6 +351,12 @@ public class BuildingGenerator : MonoBehaviour
             while(buildingsNumber * minBuildWidth * buildingScale > edgeWidth);
 
             segmentName = "identicalBuildings";
+        }
+        //touples (two buildings close to each others)
+        else if(2 * minBuildWidth * buildingScale < edgeWidth && RandomChance(toupleBuildingsChance))
+        {
+            buildingsNumber = 2;
+            segmentName = "touple";
         }
         //just one building
         else
@@ -360,7 +458,7 @@ public class BuildingGenerator : MonoBehaviour
                         Vector2 bottomLeft = bottomLine.PointOnLine(bottomPivot, bottomLine.PointFromX(block.bottomRight.x), rowOffset + inset);
                         Vector2 bottomRight = bottomLine.PointOnLine(bottomPivot, bottomLine.PointFromX(block.bottomRight.x), rowOffset + depth + inset);
 
-                        return new Building(topLeft, topRight, bottomLeft, bottomRight);
+                        return new Building(topLeft, topRight, bottomLeft, bottomRight, 'w');
                     },
                     rowOffset,
                     expectedDepth
@@ -397,7 +495,7 @@ public class BuildingGenerator : MonoBehaviour
                         Vector2 bottomLeft = bottomLine.PointOnLine(bottomPivot, bottomLine.PointFromY(block.bottomLeft.y), rowOffset + depth + inset);
                         Vector2 bottomRight = topLine.PointOnLine(topPivot, topLine.PointFromY(block.bottomRight.y), rowOffset + depth + inset);
 
-                        return new Building(topLeft, topRight, bottomLeft, bottomRight);
+                        return new Building(topLeft, topRight, bottomLeft, bottomRight, 'n');
                     },
                     rowOffset,
                     expectedDepth
@@ -448,7 +546,7 @@ public class BuildingGenerator : MonoBehaviour
                         Vector2 bottomLeft = topLine.PointOnLine(topPivot, topLine.PointFromX(block.bottomLeft.x), rowOffset + inset + depth);
                         Vector2 bottomRight = topLine.PointOnLine(topPivot, topLine.PointFromX(block.bottomLeft.x), rowOffset + inset);
 
-                        return new Building(topLeft, topRight, bottomLeft, bottomRight);
+                        return new Building(topLeft, topRight, bottomLeft, bottomRight, 'e');
                     },
                     rowOffset,
                     expectedDepth
@@ -485,7 +583,7 @@ public class BuildingGenerator : MonoBehaviour
                         Vector2 bottomLeft = topLine.PointOnLine(topPivot, topLine.PointFromY(block.topLeft.y), rowOffset + inset);
                         Vector2 bottomRight = bottomLine.PointOnLine(bottomPivot, bottomLine.PointFromY(block.topRight.y), rowOffset + inset);
 
-                        return new Building(topLeft, topRight, bottomLeft, bottomRight);
+                        return new Building(topLeft, topRight, bottomLeft, bottomRight, 's');
                     },
                     rowOffset,
                     expectedDepth

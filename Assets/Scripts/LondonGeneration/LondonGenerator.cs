@@ -47,7 +47,8 @@ public partial class LondonGenerator : MonoBehaviour
 
         loadedBounds = bounds;
 
-        onLondonGenerationStarted(bounds, loadedBounds);
+        if(onLondonGenerationStarted != null && onLondonGenerationStarted.GetInvocationList().Length > 0)
+            onLondonGenerationStarted(bounds, loadedBounds);
     }
     
     void Update()

@@ -203,8 +203,8 @@ public static class GraphicsUtil
         mesh.uv = uvs;
 
         meshFilter.mesh = mesh;
-        mesh.RecalculateTangents();
         mesh.RecalculateNormals();
+        mesh.RecalculateTangents();
 
         quad.transform.position = new Vector3(pos.x, 0, pos.y);
         quad.name = name;

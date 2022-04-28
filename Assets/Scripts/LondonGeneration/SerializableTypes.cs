@@ -230,6 +230,10 @@ namespace SerializableTypes
         public SVector2 bottomRightCorner;
         public int floorNumber;
         public string wallMaterial;
+        char direction;
+        bool roofDirection;
+        float width;
+        float depth;
 
         public SBuilding(Building building)
         {
@@ -239,6 +243,10 @@ namespace SerializableTypes
             bottomRightCorner = new SVector2(building.bottomRightCorner);
             floorNumber = building.floorsNumber;
             wallMaterial = building.wallMaterial;
+            direction = building.direction;
+            roofDirection = building.roofDirection;
+            width = building.width;
+            depth = building.depth;
         }
 
         public Building ToBuilding()
@@ -246,6 +254,10 @@ namespace SerializableTypes
             Building building = new Building(topLeftCorner.ToVector2(), topRightCorner.ToVector2(), bottomLeftCorner.ToVector2(), bottomRightCorner.ToVector2());
             building.floorsNumber = floorNumber;
             building.wallMaterial = wallMaterial;
+            building.direction = direction;
+            building.roofDirection = roofDirection;
+            building.width = width;
+            building.depth = depth;
             return building;
         }
 
