@@ -364,7 +364,7 @@ public class RoadGenerator : MonoBehaviour
         Vector2 lastPoint = Vector2.zero;
         foreach(Vector2 sidewalkPoint in sidewalkPoints)
         {
-            if(lastPoint.Equals(Vector2.zero))
+            if(lastPoint.Equals(Vector2.zero) || Vector2.Distance(lastPoint, sidewalkPoint) < buildingScale)
                 lastPoint = sidewalkPoint;
             else
             {
@@ -402,7 +402,7 @@ public class RoadGenerator : MonoBehaviour
                 );
                 sidewalkGO.transform.SetParent(roadGO.transform, true);
 
-                lastPoint = Vector2.zero;
+                lastPoint = sidewalkPoint;
             }
         }
     }

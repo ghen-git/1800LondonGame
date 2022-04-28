@@ -159,6 +159,7 @@ public class BuildingGenerator : MonoBehaviour
         }
         while(rowLeftWidth > edgeCenter || rowRightWidth > edgeWidth - edgeCenter);
         GenerateBuildingsSegment(block, firstSegment, generateBounds, edgeCenter - rowLeftWidth, rowOffset);
+        topRowDepth = firstSegment.depth;
 
         //segment loop
         while(AddSegments(block, edgeWidth, edgeCenter, maxRowDepth, ref rowLeftWidth, ref rowRightWidth, ref topRowDepth, generateBounds, rowOffset));
@@ -168,8 +169,8 @@ public class BuildingGenerator : MonoBehaviour
 
     bool AddSegments(Block block, float edgeWidth, float edgeCenter, float maxRowDepth, ref float rowLeftWidth, ref float rowRightWidth, ref float topRowDepth, BuildingBoundsGenerator generateBounds, float rowOffset)
     {
-        bool canAddMoreLeft = buildingScale + secondaryRoadSize < edgeCenter - rowLeftWidth;
-        bool canAddMoreRight = buildingScale + secondaryRoadSize < edgeWidth - edgeCenter - rowRightWidth;
+        bool canAddMoreLeft = buildingScale * minBuildWidth + secondaryRoadSize < edgeCenter - rowLeftWidth;
+        bool canAddMoreRight = buildingScale * minBuildWidth + secondaryRoadSize < edgeWidth - edgeCenter - rowRightWidth;
 
         //left segment
         if(canAddMoreLeft)
@@ -204,41 +205,41 @@ public class BuildingGenerator : MonoBehaviour
 
     void GenerateBuildingsSegment(Block block, BuildingRowSegment segment, BuildingBoundsGenerator generateBounds, float offsetFromTopToLeft, float rowOffset)
     {
-            //segment of identical buildings
-            if(segment.name == "identicalBuildings")
+        //segment of identical buildings
+        if(segment.name == "identicalBuildings")
+        {
+            //buildings parameters
+            string segmentMat = westEndWallMats[Random.Range(0, westEndWallMats.Length)];
+            int identicalBuildingsFloorsNumber = Random.Range(minFloors, maxFloors + 1);
+            float width = (segment.width - (segment.hasSecondaryRoad ? secondaryRoadSize * 2 : 0)) / segment.buildingsNumber;
+            offsetFromTopToLeft += segment.hasSecondaryRoad ? secondaryRoadSize : 0;
+            
+            for(int i = 0; i < segment.buildingsNumber; i++)
             {
-                //buildings parameters
-                string segmentMat = westEndWallMats[Random.Range(0, westEndWallMats.Length)];
-                int identicalBuildingsFloorsNumber = Random.Range(minFloors, maxFloors + 1);
-                float width = (segment.width - (segment.hasSecondaryRoad ? secondaryRoadSize * 2 : 0)) / segment.buildingsNumber;
-                offsetFromTopToLeft += segment.hasSecondaryRoad ? secondaryRoadSize : 0;
-                
-                for(int i = 0; i < segment.buildingsNumber; i++)
-                {
-                    Building building = generateBounds(block, offsetFromTopToLeft + width * i, rowOffset, width, segment.depth, segment.inset);
-                    building.wallMaterial = segmentMat;
-                    building.floorsNumber = identicalBuildingsFloorsNumber;
-                    GenerateBuilding(block, building);
-                    buildStep++;
-                }
-            }
-            //just one building
-            else /*if(segment.name == "single")*/
-            {
-                string wallsMat = block.end == "west" ? 
-                    westEndWallMats[Random.Range(0, westEndWallMats.Length)] :
-                    eastEndWallMats[Random.Range(0, eastEndWallMats.Length)];
-
-                int floorsNumber = Random.Range(minFloors, maxFloors + 1);
-                float width = (segment.width - (segment.hasSecondaryRoad ? secondaryRoadSize * 2 : 0));
-                offsetFromTopToLeft += segment.hasSecondaryRoad ? secondaryRoadSize : 0;
-
-                Building building = generateBounds(block, offsetFromTopToLeft, rowOffset, width, segment.depth, segment.inset);
-                building.wallMaterial = wallsMat;
-                building.floorsNumber = floorsNumber;
+                Building building = generateBounds(block, offsetFromTopToLeft + width * i, rowOffset, width, segment.depth, segment.inset);
+                building.wallMaterial = segmentMat;
+                building.floorsNumber = identicalBuildingsFloorsNumber;
                 GenerateBuilding(block, building);
                 buildStep++;
             }
+        }
+        //just one building
+        else /*if(segment.name == "single")*/
+        {
+            string wallsMat = block.end == "west" ? 
+                westEndWallMats[Random.Range(0, westEndWallMats.Length)] :
+                eastEndWallMats[Random.Range(0, eastEndWallMats.Length)];
+
+            int floorsNumber = Random.Range(minFloors, maxFloors + 1);
+            float width = (segment.width - (segment.hasSecondaryRoad ? secondaryRoadSize * 2 : 0));
+            offsetFromTopToLeft += segment.hasSecondaryRoad ? secondaryRoadSize : 0;
+
+            Building building = generateBounds(block, offsetFromTopToLeft, rowOffset, width, segment.depth, segment.inset);
+            building.wallMaterial = wallsMat;
+            building.floorsNumber = floorsNumber;
+            GenerateBuilding(block, building);
+            buildStep++;
+        }
     }
 
     BuildingRowSegment PickRowSegment(Block block, float edgeWidth, float maxRowDepth, bool canInset = false)
@@ -251,14 +252,11 @@ public class BuildingGenerator : MonoBehaviour
         int buildingsNumber;
 
         //segment of identical buildings
-        if(block.end == "west" && identicalBuildingsMinAmount * buildingScale < edgeWidth && RandomChance(identicalBuildingsSegmentChance))
+        if(block.end == "west" && identicalBuildingsMinAmount * minBuildWidth * buildingScale < edgeWidth && RandomChance(identicalBuildingsSegmentChance))
         {
-            if(identicalBuildingsMinAmount * minBuildWidth * buildingScale < edgeWidth)
-                do
-                    buildingsNumber = Random.Range(identicalBuildingsMinAmount, identicalBuildingsMaxAmount + 1);
-                while(buildingsNumber * minBuildWidth * buildingScale > edgeWidth);
-            else
-                buildingsNumber = identicalBuildingsMinAmount;
+            do
+                buildingsNumber = Random.Range(identicalBuildingsMinAmount, identicalBuildingsMaxAmount + 1);
+            while(buildingsNumber * minBuildWidth * buildingScale > edgeWidth);
 
             segmentName = "identicalBuildings";
         }
@@ -269,12 +267,9 @@ public class BuildingGenerator : MonoBehaviour
             segmentName = "single";
         }
 
-        if(minBuildWidth * buildingScale * buildingsNumber < edgeWidth)
-                do
-                    buildWidthModulo = Random.Range(minBuildWidth, maxBuildWidth + 1);
-                while(buildWidthModulo * buildingScale * buildingsNumber > edgeWidth);
-            else
-                buildWidthModulo = minBuildWidth + 1;
+        do
+            buildWidthModulo = Random.Range(minBuildWidth, maxBuildWidth + 1);
+        while(buildWidthModulo * buildingScale * buildingsNumber > edgeWidth);
         
         if(buildWidthModulo == 1 && buildingScale * 2 + secondaryRoadSize * 2 + maxBuildInset <= maxRowDepth)
             if(RandomChance(impasseChance))
@@ -296,7 +291,7 @@ public class BuildingGenerator : MonoBehaviour
         segment = new BuildingRowSegment
         (
             segmentName, 
-            buildWidthModulo * buildingScale + (hasSecondaryRoad ? secondaryRoadSize * 2 : 0), 
+            buildWidthModulo * buildingScale * buildingsNumber + (hasSecondaryRoad ? secondaryRoadSize * 2 : 0), 
             buildingDepth - buildingInset, 
             buildingInset, 
             buildingsNumber, 
