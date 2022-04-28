@@ -229,6 +229,7 @@ namespace SerializableTypes
         public SVector2 bottomLeftCorner;
         public SVector2 bottomRightCorner;
         public int floorNumber;
+        public string wallMaterial;
 
         public SBuilding(Building building)
         {
@@ -236,13 +237,15 @@ namespace SerializableTypes
             topRightCorner = new SVector2(building.topRightCorner);
             bottomLeftCorner = new SVector2(building.bottomLeftCorner);
             bottomRightCorner = new SVector2(building.bottomRightCorner);
-            floorNumber = building.floorNumber;
+            floorNumber = building.floorsNumber;
+            wallMaterial = building.wallMaterial;
         }
 
         public Building ToBuilding()
         {
             Building building = new Building(topLeftCorner.ToVector2(), topRightCorner.ToVector2(), bottomLeftCorner.ToVector2(), bottomRightCorner.ToVector2());
-            building.floorNumber = floorNumber;
+            building.floorsNumber = floorNumber;
+            building.wallMaterial = wallMaterial;
             return building;
         }
 
