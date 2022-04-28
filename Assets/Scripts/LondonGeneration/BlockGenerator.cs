@@ -201,7 +201,7 @@ public class Block
     {
         Vector2 oldPoint = edge.Find( p => p.x == point.x && p.y == point.y);
         
-        if(!oldPoint.Equals(new Vector2()))
+        if(!oldPoint.Equals(default))
             edge.Remove(oldPoint);
         else
             edge.Add(point);
@@ -296,7 +296,7 @@ public class BlockGenerator : MonoBehaviour
     {
         Block block = GenerateBounds(startCoords);
         
-        block.direction = RandomChance(50, 100);
+        block.direction = RandomChance(50);
 
         //smoothly transitions between west and east end "areas" with perlin noise
         float perlinX = perlinOffset.x + (float)(startCoords.x + 10000) / 100 * perlinFrequency;

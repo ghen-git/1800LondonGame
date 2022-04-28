@@ -52,7 +52,7 @@ public static class Util
         return pointArea - quadArea < 0.1f;
     }
 
-    public static bool RandomChance(int percentage, int max)
+    public static bool RandomChance(int percentage, int max = 100)
     {
         return UnityEngine.Random.Range(0, max) <= percentage;
     }
