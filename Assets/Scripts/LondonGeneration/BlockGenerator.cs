@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Util;
+using SerializableTypes;
 using static LondonSettings;
 
 public class Line
@@ -132,7 +133,6 @@ public class Block
     public List<Vector2> bottomSidewalkPoints;
 
     public Dictionary<Vector2Int, Building> buildings;
-
 
     public Block(Vector2 topLeft, Vector2 topRight, Vector2 bottomLeft, Vector2 bottomRight)
     {
