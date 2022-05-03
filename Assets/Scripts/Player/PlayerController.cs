@@ -11,11 +11,11 @@ public class PlayerController : MonoBehaviour
     const float airSpeed = 1f;
     const float groundDrag = 6f;
     const float airDrag = 1f;
-    const float sprintingCoeff = 2f;
+    const float sprintingCoeff = 20f;
     const float mouseSensitivity = 2f;
     const float clippingFixAmount = 1f;
     Vector3 cameraOffset = new Vector3(-3, -1, 2.86f);
-    const float height = 3.19f;
+    const float height = 1.8f;
     const float width = 2;
 
     //player states

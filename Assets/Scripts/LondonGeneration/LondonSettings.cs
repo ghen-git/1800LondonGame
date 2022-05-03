@@ -39,7 +39,7 @@ public static class LondonSettings
     #region Buildings
 
     //floors
-    public const float floorHeight = 5f;
+    public const float floorHeight = 4f;
     public const int minFloors = 2;
     public const int maxFloors = 5;
 
@@ -51,7 +51,7 @@ public static class LondonSettings
     public const float secondaryRoadSize = 3f;
 
     //scales
-    public const float buildingScale = 10f;
+    public const float buildingScale = 12f;
     public const float insetScale = 2f;
 
     //chances
