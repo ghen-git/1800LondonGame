@@ -5,6 +5,7 @@ using UnityEngine;
 using static Util;
 using SerializableTypes;
 using static LondonSettings;
+using System.Threading;
 
 public class Line
 {
@@ -272,7 +273,11 @@ public class BlockGenerator : MonoBehaviour
     {
         Block block = blockMap[coords];
         RenderBase(coords);
-        buildingGenerator.RenderBuildings(block, coords);
+
+        new Thread(() =>
+        {
+            buildingGenerator.RenderBuildings(block, coords);   
+        }).Start();
     }
 
     public void LoadBlocks(Vector2Int[] bounds)

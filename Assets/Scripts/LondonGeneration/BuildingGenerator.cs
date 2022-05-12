@@ -4,6 +4,7 @@ using UnityEngine;
 using static Util;
 using static GraphicsUtil;
 using static LondonSettings;
+using System.Threading.Tasks;
 
 public class Building
 {
@@ -48,7 +49,7 @@ public class Building
         this.bottomRightCorner = bottomRightCorner;
         this.direction = direction;
 
-        if(direction == 'e' || direction == 'w')
+        if(direction == 'w' || direction == 'e')
         {
             width = Vector2.Distance(topLeftCorner, bottomLeftCorner);
             depth = Vector2.Distance(topLeftCorner, topRightCorner);
@@ -91,6 +92,10 @@ public class BuildingGenerator : MonoBehaviour
     int buildStep;
     int rowStep;
 
+    //doors and windows meshes reference
+    GameObject blankDoorGO;
+    GameObject blankWindowGO;
+
     public Dictionary<Vector2Int, Building> GenerateBuildings(Block block)
     {
         GenerateBuildingsBounds(block);
@@ -98,33 +103,267 @@ public class BuildingGenerator : MonoBehaviour
         return buildings;
     }
 
-    public void RenderBuildings(Block block, Vector2Int coords)
+    async Task<GameObject> RenderBuilding(Block block, Vector2 xy, Building building, Vector2 center, string name)
+    {
+        Vector2 topLeft, topRight, bottomLeft, bottomRight;
+        float rotation;
+
+        switch(building.direction)
+        {
+        case 'n':
+            topLeft = building.topLeftCorner;
+            topRight = building.topRightCorner;
+            bottomLeft = building.bottomLeftCorner;
+            bottomRight = building.bottomRightCorner;
+            rotation = 0f;
+            break;
+        case 's':
+            topLeft = building.bottomRightCorner;
+            topRight = building.bottomLeftCorner;
+            bottomLeft = building.topRightCorner;
+            bottomRight = building.topLeftCorner;
+            rotation = 180f;
+            break;
+        case 'w':
+            topLeft = building.bottomLeftCorner;
+            topRight = building.topLeftCorner;
+            bottomLeft = building.bottomRightCorner;
+            bottomRight = building.topRightCorner;
+            rotation = -90f;
+            break;
+        case 'e':
+            topLeft = building.topRightCorner;
+            topRight = building.bottomRightCorner;
+            bottomLeft = building.topLeftCorner;
+            bottomRight = building.bottomLeftCorner;
+            rotation = 90f;
+            break;
+        default:
+            topLeft = building.topLeftCorner;
+            topRight = building.topRightCorner;
+            bottomLeft = building.bottomLeftCorner;
+            bottomRight = building.bottomRightCorner;
+            rotation = 0f;
+            break;
+        }
+
+        return await RenderBuildingMesh(block, xy, building, center, topLeft, topRight, bottomLeft, bottomRight, rotation, "BlankDoor", "BlankWindow");
+    }
+
+    /*
+        The 4 vectors you pass represent the corners of the building, and they are called
+        as if the building was oriented from north, so the door will be placed on the
+        northern side. Thus, you shall orient the points accordingly
+
+        Hope this made sense, it's the most modular appoach i came up with.
+    */
+    public async Task<GameObject> RenderBuildingMesh(Block block, Vector2 xy, Building building, Vector2 center, Vector2 topLeft, Vector2 topRight, Vector2 bottomLeft, Vector2 bottomRight, float rotation, string doorMeshName, string windowMeshName)
+    {
+        GameObject buildingGO = null;
+        MeshFilter buildingMesh = null;
+        CombineInstance[] combineData = null;
+
+        await Dispatcher.RunOnMainThreadAsync(() =>
+        {
+            GameObject doorMesh = GameObject.Find(doorMeshName);
+            GameObject windowMesh = GameObject.Find(windowMeshName);
+
+            //building gameObject setup
+            buildingGO = new GameObject(name);
+            
+            buildingMesh = buildingGO.AddComponent<MeshFilter>();
+            MeshRenderer meshRenderer = buildingGO.AddComponent<MeshRenderer>();
+
+            meshRenderer.material = Resources.Load<Material>($"Materials/{building.wallMaterial}");
+            
+            //calculation of variables handy in the building's mesh generation
+            Line leftEdge = new Line(topLeft, bottomLeft);
+            Line topEdge = new Line(topRight, topLeft);
+            Line rightEdge = new Line(bottomRight, topRight);
+            Line bottomEdge = new Line(bottomLeft, bottomRight);
+            float alignment = AngleFrom3Points(building.bottomRightCorner, building.bottomLeftCorner, new Vector2(building.bottomLeftCorner.x + 1, building.bottomLeftCorner.y));
+
+            int meshesPerFloor = System.Convert.ToInt32((building.width / buildingWallSize) * 2 + (building.depth / buildingWallSize) * 2);
+
+            //variable used to store the combine mesh data
+            combineData = new CombineInstance[System.Convert.ToInt32
+            (
+                meshesPerFloor * building.floorsNumber
+            )];
+
+            //first floor generation
+
+            //top side
+            GameObject targetMesh;
+            int doorIndex = System.Convert.ToInt32(Mathf.Ceil((building.width / buildingWallSize) / 2));
+
+            
+                for(int i = 0; i < building.width / buildingWallSize; i++)
+                {
+                    if(i == doorIndex - 1)
+                        targetMesh = doorMesh;
+                    else 
+                        targetMesh = windowMesh;
+                    
+                    Vector2 pos = topEdge.PointOnLine(topRight, topLeft, i * buildingWallSize + buildingWallSize / 2) + xy;
+
+                    targetMesh.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                    targetMesh.transform.Rotate(new Vector3(0, -90f + rotation + alignment * Mathf.Rad2Deg, 0));
+                    targetMesh.transform.position = new Vector3(pos.x, 0 * floorHeight, pos.y);
+
+                    combineData[meshesPerFloor * 0 + i].mesh = targetMesh.GetComponent<MeshFilter>().mesh;
+                    combineData[meshesPerFloor * 0 + i].transform = targetMesh.transform.localToWorldMatrix;
+                }
+
+                //left side
+                for(int i = 0; i < building.depth / buildingWallSize - buildingWallSize / 8; i++)
+                {            
+                    Vector2 pos = leftEdge.PointOnLine(topLeft, bottomLeft, i * buildingWallSize + buildingWallSize / 2) + xy;
+
+                    windowMesh.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                    windowMesh.transform.Rotate(new Vector3(0, 180f + rotation + alignment * Mathf.Rad2Deg, 0));
+                    windowMesh.transform.position = new Vector3(pos.x, 0 * floorHeight, pos.y);
+
+                    combineData[meshesPerFloor * 0 + i + System.Convert.ToInt32(building.width / buildingWallSize)].mesh = windowMesh.GetComponent<MeshFilter>().mesh;
+                    combineData[meshesPerFloor * 0 + i + System.Convert.ToInt32(building.width / buildingWallSize)].transform = windowMesh.transform.localToWorldMatrix;
+                }
+                //bottom side
+                for(int i = 0; i < building.width / buildingWallSize; i++)
+                {            
+                    Vector2 pos = bottomEdge.PointOnLine(bottomLeft, bottomRight, i * buildingWallSize + buildingWallSize / 2) + xy;
+
+                    windowMesh.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                    windowMesh.transform.Rotate(new Vector3(0, 90f + rotation + alignment * Mathf.Rad2Deg, 0));
+                    windowMesh.transform.position = new Vector3(pos.x, 0 * floorHeight, pos.y);
+
+                    combineData[meshesPerFloor * 0 + i + System.Convert.ToInt32(building.width / buildingWallSize + building.depth / buildingWallSize)].mesh = windowMesh.GetComponent<MeshFilter>().mesh;
+                    combineData[meshesPerFloor * 0 + i + System.Convert.ToInt32(building.width / buildingWallSize + building.depth / buildingWallSize)].transform = windowMesh.transform.localToWorldMatrix;
+                }
+                //right side
+                for(int i = 0; i < building.depth / buildingWallSize - buildingWallSize / 8; i++)
+                {            
+                    Vector2 pos = rightEdge.PointOnLine(bottomRight, topRight, i * buildingWallSize + buildingWallSize / 2) + xy;
+
+                    windowMesh.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                    windowMesh.transform.Rotate(new Vector3(0, 0f + rotation + alignment * Mathf.Rad2Deg, 0));
+                    windowMesh.transform.position = new Vector3(pos.x, 0 * floorHeight, pos.y);
+
+                    combineData[meshesPerFloor * 0 + i + System.Convert.ToInt32((building.width / buildingWallSize) * 2 + building.depth / buildingWallSize)].mesh = windowMesh.GetComponent<MeshFilter>().mesh;
+                    combineData[meshesPerFloor * 0 + i + System.Convert.ToInt32((building.width / buildingWallSize) * 2 + building.depth / buildingWallSize)].transform = windowMesh.transform.localToWorldMatrix;
+                }
+
+            for(int floorN = 1; floorN < building.floorsNumber; floorN++)
+            {
+                for(int i = 0; i < building.width / buildingWallSize; i++)
+                {                    
+                    Vector2 pos = topEdge.PointOnLine(topRight, topLeft, i * buildingWallSize + buildingWallSize / 2) + xy;
+
+                    windowMesh.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                    windowMesh.transform.Rotate(new Vector3(0, -90f + rotation + alignment * Mathf.Rad2Deg, 0));
+                    windowMesh.transform.position = new Vector3(pos.x, floorN * floorHeight, pos.y);
+
+                    combineData[meshesPerFloor * floorN + i].mesh = windowMesh.GetComponent<MeshFilter>().mesh;
+                    combineData[meshesPerFloor * floorN + i].transform = windowMesh.transform.localToWorldMatrix;
+                }
+
+                //left side
+                for(int i = 0; i < building.depth / buildingWallSize - buildingWallSize / 8; i++)
+                {            
+                    Vector2 pos = leftEdge.PointOnLine(topLeft, bottomLeft, i * buildingWallSize + buildingWallSize / 2) + xy;
+
+                    windowMesh.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                    windowMesh.transform.Rotate(new Vector3(0, 180f + rotation + alignment * Mathf.Rad2Deg, 0));
+                    windowMesh.transform.position = new Vector3(pos.x, floorN * floorHeight, pos.y);
+
+                    combineData[meshesPerFloor * floorN + i + System.Convert.ToInt32(building.width / buildingWallSize)].mesh = windowMesh.GetComponent<MeshFilter>().mesh;
+                    combineData[meshesPerFloor * floorN + i + System.Convert.ToInt32(building.width / buildingWallSize)].transform = windowMesh.transform.localToWorldMatrix;
+                }
+                //bottom side
+                for(int i = 0; i < building.width / buildingWallSize; i++)
+                {            
+                    Vector2 pos = bottomEdge.PointOnLine(bottomLeft, bottomRight, i * buildingWallSize + buildingWallSize / 2) + xy;
+
+                    windowMesh.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                    windowMesh.transform.Rotate(new Vector3(0, 90f + rotation + alignment * Mathf.Rad2Deg, 0));
+                    windowMesh.transform.position = new Vector3(pos.x, floorN * floorHeight, pos.y);
+
+                    combineData[meshesPerFloor * floorN + i + System.Convert.ToInt32(building.width / buildingWallSize + building.depth / buildingWallSize)].mesh = windowMesh.GetComponent<MeshFilter>().mesh;
+                    combineData[meshesPerFloor * floorN + i + System.Convert.ToInt32(building.width / buildingWallSize + building.depth / buildingWallSize)].transform = windowMesh.transform.localToWorldMatrix;
+                }
+                //right side
+                for(int i = 0; i < building.depth / buildingWallSize - buildingWallSize / 8; i++)
+                {            
+                    Vector2 pos = rightEdge.PointOnLine(bottomRight, topRight, i * buildingWallSize + buildingWallSize / 2) + xy;
+
+                    windowMesh.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                    windowMesh.transform.Rotate(new Vector3(0, 0f + rotation + alignment * Mathf.Rad2Deg, 0));
+                    windowMesh.transform.position = new Vector3(pos.x, floorN * floorHeight, pos.y);
+
+                    combineData[meshesPerFloor * floorN + i + System.Convert.ToInt32((building.width / buildingWallSize) * 2 + building.depth / buildingWallSize)].mesh = windowMesh.GetComponent<MeshFilter>().mesh;
+                    combineData[meshesPerFloor * floorN + i + System.Convert.ToInt32((building.width / buildingWallSize) * 2 + building.depth / buildingWallSize)].transform = windowMesh.transform.localToWorldMatrix;
+                }
+            }
+            
+            buildingMesh.mesh.CombineMeshes(combineData);
+        });
+
+        await Dispatcher.RunOnMainThreadAsync(() =>
+        {
+            buildingGO.AddComponent<MeshCollider>();
+            buildingGO.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
+        });
+        return buildingGO;
+    }
+
+    /*public void WallsInit()
+    {
+        //gets the assets from 
+        blankDoorGO = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/Walls/BlankDoor"));
+        blankWindowGO = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/Walls/BlankWindow"));
+
+        //deactivates the gameObjects so they won't make a mess when rendering
+        blankDoorGO.SetActive(false);
+        blankWindowGO.SetActive(false);
+    }
+
+    public void ClearWalls()
+    {
+        Destroy(blankDoorGO);
+        Destroy(blankWindowGO);
+    }*/
+
+    public async void RenderBuildings(Block block, Vector2Int coords)
     {
         foreach(Vector2Int buildingCoords in block.buildings.Keys)
         {
+            
             Building building = block.buildings[buildingCoords];
+
             Vector2 xy = new Vector2(coords.x, coords.y) * blockSize;
 
             //get building center
             Vector2 center = GetGlobalCenter(building.vertices, xy);
+            
+            string blockName = "";
+            
+            await Dispatcher.RunOnMainThreadAsync(() =>
+            {
+                if(block.block != null)
+                    blockName = block.block.name;
+                else    
+                    blockName = "destroyed";
+            });
 
-            //building gameObject
-            GameObject buildingGO = new GameObject(block.block.name + "|building-" + VectToName(buildingCoords));
-            buildingGO.transform.SetParent(block.block.transform, true);
-
-            //walls rendering
-            GameObject walls = RenderQuad
-            (
-                GetRelativeVertices(building.vertices, xy, center), 
-                center,
-                building.floorsNumber * floorHeight, 
-                buildingGO.name + "-walls", 
-                Resources.Load<Material>($"Materials/{building.wallMaterial}"), 
-                0.15f,
-                new bool[]{true, true, true, true, true, false}
-            );
-
-            walls.transform.SetParent(buildingGO.transform, true);
+            if(blockName != "destroyed")
+            {
+                //building gameObject
+                GameObject buildingGO = await RenderBuilding(block, xy, building, center, blockName + "|building-" + VectToName(buildingCoords));
+                Dispatcher.RunOnMainThread(() =>
+                {
+                    if(block.block != null)
+                        buildingGO.transform.SetParent(block.block.transform, true);
+                });
+            }
         }
     }
 
@@ -142,16 +381,6 @@ public class BuildingGenerator : MonoBehaviour
 
     bool CanGenerate(Building building, Block block)
     {
-        //kills weird looking ninja star buildings
-        if(Mathf.Abs(AngleFrom3Points(building.bottomLeftCorner, building.topLeftCorner, building.topRightCorner)) < Mathf.PI / 4 + 0.1f)
-            return false;
-        if(Mathf.Abs(AngleFrom3Points(building.topLeftCorner, building.topRightCorner, building.bottomRightCorner)) < Mathf.PI / 4 + 0.1f)
-            return false;
-        if(Mathf.Abs(AngleFrom3Points(building.topRightCorner, building.bottomRightCorner, building.bottomLeftCorner)) < Mathf.PI / 4 + 0.1f)
-            return false;
-        if(Mathf.Abs(AngleFrom3Points(building.bottomRightCorner, building.bottomLeftCorner, building.topLeftCorner)) < Mathf.PI / 4 + 0.1f)
-            return false;
-
         //kills buildings that exit from the block borders
         if(!PointInQuad(building.topLeftCorner, block))
             return false;

@@ -110,7 +110,7 @@ public class RoadGenerator : MonoBehaviour
         //other objects placement
 
         //fence posts
-        GameObject fencePost = Resources.Load<GameObject>("Prefabs/FencePost");
+        GameObject fencePost = Resources.Load<GameObject>("Prefabs/RoadItems/FencePost");
         PlaceAtOffset(fencePost, fencePostDistance, fencePostOffset, block, verticalRoad, true);
         PlaceAtOffset(fencePost, fencePostDistance, fencePostOffset, block, horizontalRoad, false);
     }

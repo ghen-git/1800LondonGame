@@ -6,7 +6,7 @@ public static class LondonSettings
 {
     #region General
 
-    public const int renderDistance = 4;
+    public const int renderDistance = 3;
     public static Vector2Int perlinOffset;
 
     #endregion
@@ -48,7 +48,8 @@ public static class LondonSettings
     public const int maxBuildWidth = 3;
     public const int minBuildInset = 0;
     public const int maxBuildInset = 2;
-    public const float secondaryRoadSize = 3f;
+    public const float secondaryRoadSize = 4f;
+    public const float buildingWallSize = 4f;
 
     //scales
     public const float buildingScale = 12f;
