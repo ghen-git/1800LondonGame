@@ -16,6 +16,7 @@ public class Building
     public string wallMaterial;
     public char direction;
     public bool roofDirection;
+    public bool closedRoof;
     public float width;
     public float depth;
 
@@ -156,30 +157,62 @@ public class BuildingGenerator : MonoBehaviour
         });
 
         //getting all the meshes for the various models
-        GameObject doorMesh = null, windowMesh = null;
+        GameObject doorMesh = null, windowBaseMesh = null, windowGlassMesh = null;
         await Dispatcher.RunOnMainThreadAsync(() =>
         {
             doorMesh = GameObject.Find("BlankDoor");
-            windowMesh= GameObject.Find("BlankWindow");
+            windowBaseMesh= GameObject.Find("BlankWindowWallBase");
+            windowGlassMesh= GameObject.Find("BlankWindowGlass");
         });
 
+        //getting all the materials
+        Material wall = null, window = null, roof = null;
+        await Dispatcher.RunOnMainThreadAsync(() =>
+        {
+            wall = Resources.Load<Material>($"Materials/{building.wallMaterial}");
+            window = Resources.Load<Material>($"Materials/Walls/WindowPane");
+            roof = Resources.Load<Material>($"Materials/Roof/RoofTiles");
+        });
+
+        //walls rendering
         int doorIndex = System.Convert.ToInt32(Mathf.Ceil((building.width / buildingWallSize) / 2));
-        GameObject baseWall = await RenderBuildingMesh(block, xy, building, center, topLeft, topRight, bottomLeft, bottomRight, rotation, (string side, int wallIndex, int floorIndex) =>
+        GameObject baseWall = await RenderWallMesh(block, xy, building, center, topLeft, topRight, bottomLeft, bottomRight, rotation, wall, (string side, int wallIndex, int floorIndex) =>
         {
             if(wallIndex == doorIndex - 1 && floorIndex == 0 && side == "front")
                 return doorMesh;
             else 
-                return windowMesh;
+                return windowBaseMesh;
         });
+        GameObject windows = await RenderWallMesh(block, xy, building, center, topLeft, topRight, bottomLeft, bottomRight, rotation, window, (string side, int wallIndex, int floorIndex) =>
+        {
+            if(wallIndex == doorIndex - 1 && floorIndex == 0 && side == "front")
+                return null;
+            else 
+                return windowGlassMesh;
+        });
+
+        //roof rendering
+        // GameObject roof = await RenderBuildingRoof(block, xy, building, center, roof);
 
         //binds the generated meshes to the parent mesh
         await Dispatcher.RunOnMainThreadAsync(() =>
         {
             baseWall.transform.SetParent(buildingGO.transform);
+            windows.transform.SetParent(buildingGO.transform);
         });
 
         return buildingGO;
     }
+    
+    /*public async Task<GameObject> RenderBuildingRoof(Block block, Vector2 xy, Building building, Vector2 center, Material roof)
+    {
+        GameObject roofGO = null;
+
+        await Dispatcher.RunOnMainThreadAsync(() =>
+        {
+
+        });
+    }*/
 
     public delegate GameObject WallRenderingPredicate(string side, int wallIndex, int floorIndex);
     /*
@@ -189,7 +222,7 @@ public class BuildingGenerator : MonoBehaviour
 
         Hope this made sense, it's the most modular appoach i came up with.
     */
-    public async Task<GameObject> RenderBuildingMesh(Block block, Vector2 xy, Building building, Vector2 center, Vector2 topLeft, Vector2 topRight, Vector2 bottomLeft, Vector2 bottomRight, float rotation, WallRenderingPredicate wallRenderingPredicate)
+    public async Task<GameObject> RenderWallMesh(Block block, Vector2 xy, Building building, Vector2 center, Vector2 topLeft, Vector2 topRight, Vector2 bottomLeft, Vector2 bottomRight, float rotation, Material material, WallRenderingPredicate wallRenderingPredicate)
     {
         GameObject wallGO = null;
         MeshFilter buildingMesh = null;
@@ -203,7 +236,7 @@ public class BuildingGenerator : MonoBehaviour
             buildingMesh = wallGO.AddComponent<MeshFilter>();
             MeshRenderer meshRenderer = wallGO.AddComponent<MeshRenderer>();
 
-            meshRenderer.material = Resources.Load<Material>($"Materials/{building.wallMaterial}");
+            meshRenderer.material = material;
             
             //calculation of variables handy in the building's mesh generation
             Line leftEdge = new Line(topLeft, bottomLeft);
@@ -475,6 +508,7 @@ public class BuildingGenerator : MonoBehaviour
         {
             //buildings parameters
             string segmentMat = westEndWallMats[Random.Range(0, westEndWallMats.Length)];
+            bool segmentClosedRoof = RandomChance(50);
             int identicalBuildingsFloorsNumber = Random.Range(minFloors, maxFloors + 1);
             float width = (segment.width - (segment.hasSecondaryRoad ? secondaryRoadSize * 2 : 0)) / segment.buildingsNumber;
             offsetFromTopToLeft += segment.hasSecondaryRoad ? secondaryRoadSize : 0;
@@ -482,6 +516,7 @@ public class BuildingGenerator : MonoBehaviour
             for(int i = 0; i < segment.buildingsNumber; i++)
             {
                 Building building = generateBounds(block, offsetFromTopToLeft + width * i, rowOffset, width, segment.depth, segment.inset);
+                building.closedRoof = segmentClosedRoof;
                 building.wallMaterial = segmentMat;
                 building.floorsNumber = identicalBuildingsFloorsNumber;
                 GenerateBuilding(block, building);

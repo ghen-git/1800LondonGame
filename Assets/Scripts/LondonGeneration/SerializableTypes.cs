@@ -234,6 +234,7 @@ namespace SerializableTypes
         bool roofDirection;
         float width;
         float depth;
+        bool closedRoof;
 
         public SBuilding(Building building)
         {
@@ -241,6 +242,7 @@ namespace SerializableTypes
             topRightCorner = new SVector2(building.topRightCorner);
             bottomLeftCorner = new SVector2(building.bottomLeftCorner);
             bottomRightCorner = new SVector2(building.bottomRightCorner);
+            closedRoof = building.closedRoof;
             floorNumber = building.floorsNumber;
             wallMaterial = building.wallMaterial;
             direction = building.direction;
@@ -252,6 +254,7 @@ namespace SerializableTypes
         public Building ToBuilding()
         {
             Building building = new Building(topLeftCorner.ToVector2(), topRightCorner.ToVector2(), bottomLeftCorner.ToVector2(), bottomRightCorner.ToVector2());
+            building.closedRoof = closedRoof;
             building.floorsNumber = floorNumber;
             building.wallMaterial = wallMaterial;
             building.direction = direction;
